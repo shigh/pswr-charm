@@ -61,37 +61,46 @@
 
 
 \section{Introduction}
-\label{ongbw_mini_13_sec:introduction}
+\label{prop_sec:introduction}
 
-Schwarz Waveform Relaxation (SWR) introduced in \cite{bjorhus1995} has
-been analyzed for a wide range of time-dependent problems, including
-the parabolic heat equation \cite{MR1638096}, wave equation and
-advection-diffusion equations \cite{gander1999,MR1941398}, Maxwell's
-equations \cite{courvoisier2013}, and the porous medium equation
-\cite{japhet2013}.  In contrast to classical Schwarz iterations, where
+Schwarz Waveform Relaxation (SWR), introduced in \cite{bjorhus1995},
+is a domain decomposition based method for solving time dependant
+PDEs.
+% has been analyzed for a wide range of time-dependent problems,
+% including the parabolic heat equation \cite{MR1638096}, wave
+% equation and advection-diffusion equations
+% \cite{gander1999,MR1941398}, Maxwell's equations
+% \cite{courvoisier2013}, and the porous medium equation
+% \cite{japhet2013}.
+In contrast to classical Schwarz iterations, where
 the time-dependent PDE is discretized in time and domain-decomposition
 is applied to the sequence of steady-state problems, SWR solves {\em
   time-dependent} sub-problems; this relaxes synchronization of the
 sub-problems and provides a means to couple disparate solvers applied
-to individual sub-problems, for example \cite{lemarie:hal-00872496}.
-SWR has also been shown in \cite{MR1941398, MR2448703} to have
-superlinear convergence for small time windows.  This paper outlines a
-framework that reformulates SWR so that successive waveform iterates
-can be computed in a pipeline fashion, allowing for increased
-concurrency and hence, increased scalability for SWR-type algorithms.
-In \S\ref{ongbw_mini_13_sec:waveform}, we review the SWR algorithm
-before introducing and comparing several Pipeline Schwarz Waveform
-Relaxation algorithms (PSWR) in
-\S\ref{ongbw_mini_13_sec:pipeline_waveform}.  Numerical scaling
-results for the linear heat equation are presented in
-\S\ref{ongbw_mini_13_sec:numerics}.
+to individual sub-problems,
+% for example \cite{lemarie:hal-00872496}.
+% SWR has also been shown in \cite{MR1941398, MR2448703} to have
+% superlinear convergence for small time windows.
+Pipeline schwarz waveform relaxation (PSWR), introduced in ***ref***,
+extends the spatial parallelism of SWR methods to the time domain by
+computing succesive iterations in a pipeline fashion.
+% This paper outlines a framework that
+% reformulates SWR so that successive waveform iterates can be computed
+% in a pipeline fashion, allowing for increased concurrency and hence,
+% increased scalability for SWR-type algorithms.
+% In \S\ref{prop_sec:waveform}, we
+% review the SWR algorithm before introducing and comparing several
+% Pipeline Schwarz Waveform Relaxation algorithms (PSWR) in
+% \S\ref{prop_sec:pipeline_waveform}.  Numerical scaling
+% results for the linear heat equation are presented in
+% \S\ref{prop_sec:numerics}.
 
-\section{Schwarz Waveform Relaxation}
-\label{ongbw_mini_13_sec:waveform}
+\section{Problem Description}
+\label{prop_sec:waveform}
 
 Denote the PDE of interest as 
 \begin{eqnarray}
-  \label{ongbw_mini_13_eqn:pde1}
+  \label{prop_eqn:pde1}
   u_t =  \mathcal{L}(t,u), \quad (x,t)\in \Omega\times[0,T]\\
   \nonumber
   u(x,0) = f(x), \quad x \in \Omega \\
@@ -101,10 +110,10 @@ Denote the PDE of interest as
 Consider a partitioning of the domain, $\Omega = \cup_i\Omega_i$.
 The domains in the partition may be overlapping or non-overlapping.
 Let $u_i$ denote the solution on sub-domain $\Omega_i$.
-Then, equation~(\ref{ongbw_mini_13_eqn:pde1}) can be decomposed into a
+Then, equation~(\ref{prop_eqn:pde1}) can be decomposed into a
 coupled system of equations,
 \begin{eqnarray}
-  \label{ongbw_mini_13_eqn:pde2}
+  \label{prop_eqn:pde2}
   (u_i)_t =  \mathcal{L}(t,u_i), \quad (x,t)\in \Omega_i\times[0,T]\\
   \nonumber
   u_i(x,0) = f(x), \quad x \in \Omega_i \\
@@ -114,16 +123,16 @@ coupled system of equations,
   \mathcal{T}_{ij}(u_{i}(z,t)) = \mathcal{T}_{ij}(u_{j}(z,t)), \quad z \in \partial\Omega_i\cap\partial\Omega_j.
 \end{eqnarray}
 where $T$ are transmission operators appropriate to the
-equation~(\ref{ongbw_mini_13_eqn:pde1}).  SWR decouples the system of
-PDEs in equation~(\ref{ongbw_mini_13_eqn:pde2}).  Let $u_i^{[k]}$
+equation~(\ref{prop_eqn:pde1}).  SWR decouples the system of
+PDEs in equation~(\ref{prop_eqn:pde2}).  Let $u_i^{[k]}$
 denote the $k$-th waveform iterate on sub-domain $\Omega_i$. After
 specifying an initial estimate for the sub-domain solution on the
 interfaces, $u_i^{[0]}(z,t),
 z\in\partial\Omega_i\setminus\partial\Omega$, the SWR algorithm
-iteratively solves PDEs (\ref{ongbw_mini_13_eqn:pde3}) for waveform
+iteratively solves PDEs (\ref{prop_eqn:pde3}) for waveform
 iterates $k=1,2,\ldots$ until convergence,
 \begin{eqnarray}
-  \label{ongbw_mini_13_eqn:pde3}
+  \label{prop_eqn:pde3}
   (u_i^{[k]})_t =  \mathcal{L}(t,u_i^{[k]}), \quad (x,t)\in \Omega_i\times[0,T]\\
   \nonumber
   u_i^{[k]}(x,0) = f(x), \quad x \in \Omega_i \\
@@ -132,85 +141,48 @@ iterates $k=1,2,\ldots$ until convergence,
   \nonumber
   \mathcal{T}_{ij}(u_{i}^{[k]}(z,t)) = \mathcal{T}_{ij}(u_{j}^{[k-1]}(z,t)), \quad z \in \partial\Omega_i\cap\partial\Omega_j.
 \end{eqnarray}
-%% Discretely, let $u_i^{[k],n}$ denote the numerical solution on
-%% subdomain $\Omega_i$, waveform iterate $k$, and time $t^n$.  Then, a
-%% backward Euler differentiation of
-%% equation~(\ref{ongbw_mini_13_eqn:pde3}) gives
-%% \begin{eqnarray*}
-%%   \frac{u_i^{[k],n+1} - u_i^{[k],n}}{\Delta t} = \mathcal{L}(t^{n+1},u_i^{[k],n+1}),\\
-%% \end{eqnarray*}
 
-%% \begin{algorithm}
-%% \caption{The classic waveform relaxation algorithm allows for each
-%%   subdomain to independently advance the solution on their respective
-%%   subdomains using time integrators and time steps of their choosing.
-%%   (i.e. each domain can use different time integrators and different
-%%   time steps).  During each waveform iteration, boundary data on each
-%%   subdomain is aggregated for the entire compuational time interval
-%%   before boundary data is exchanged between neighboring subdomains.}
-%% \label{ongbw_mini_13_alg1}
-\begin{table}[htbp]
-\noindent\hrulefill
-{\bf Schwarz Waveform Relaxation Algorithm} 
-\hrulefill \\
-1. {\tt MPI Initialization}\\
-2. {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)} \\
-3. \quad\quad {\tt for} $t = \Delta t \ldots T$ \\
-4. \quad\quad\quad\quad {\tt Guess} $u_i^{[0]}(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega_j$\\
-5. \quad\quad {\tt end} \\
-6. {\tt end} \\
-7. {\tt for } $k=1 \ldots K$ {\em (Waveform iteration)}\\
-8. \quad\quad {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)}\\
-9. \quad\quad\quad\quad {\tt for} $t = \Delta t \ldots T$ \\
-10.\quad\quad\quad\quad\quad\quad {\tt Solve for } $u_i^{[k]}(t, x)$ \\
-11.\quad\quad\quad\quad {\tt end} \\
-12.\quad\quad\quad\quad {\tt for} $t = \Delta t \ldots T$ \\
-13.\quad\quad\quad\quad\quad\quad {\tt Exchange transmission data} $\mathcal{T}(u_i^{[k]}(t, z))$ \\
-14.\quad\quad\quad\quad {\tt end} \\
-15.\quad\quad\quad\quad {\tt Check convergence} \\
-16.\quad\quad {\tt end}\\
-17. {\tt end} \\
-%% \begin{verbatim}
-%% 1.  MPI Initialization
-%% 2.  for each domain (MPI Parallelization)
-%% 3.     Guess $u_i^{[0]}(z,t), \quad z \in \partial\Omega_i\cup\partial\Omega_j$
-%% 6.  end 
-%% 7.  for each waveform iteration 
-%% 8.     for each subdomain (MPI Parallelization)
-%% 9.        for each time step
-%% 10.          advance solution on subdomain 
-%% 11.        end
-%% 12.     end
-%% 13.     MPI Comm (exchange boundary data & check convergence)
-%% 14. end
-%% 15. MPI Finalize
-%% \end{verbatim}
-.\hrulefill  \\
-%% \caption{The classic waveform relaxation algorithm allows for each
-%%   subdomain to independently advance the solution on their respective
-%%   subdomains using time integrators and time steps of their choosing.
-%%   (i.e. each domain can use different time integrators and different
-%%   time steps).  During each waveform iteration, boundary data on each
-%%   subdomain is aggregated for the entire compuational time interval
-%%   before boundary data is exchanged between neighboring subdomains.}
-\end{table}
-A pseudo-code for the algorithm is presented on the next page.
-Observe that SWR allows for each sub-domain to independently compute
-time-dependent solutions on their respective sub-domains (lines 9-11)
-During each waveform iteration, transmission data on each sub-domain
-is aggregated for the entire computational time interval before
-boundary data is exchanged between neighboring sub-domains (lines
-12-14).
+% \begin{table}[htbp]
+% \noindent\hrulefill
+% {\bf Schwarz Waveform Relaxation Algorithm} 
+% \hrulefill \\
+% 1. {\tt MPI Initialization}\\
+% 2. {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)} \\
+% 3. \quad\quad {\tt for} $t = \Delta t \ldots T$ \\
+% 4. \quad\quad\quad\quad {\tt Guess} $u_i^{[0]}(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega_j$\\
+% 5. \quad\quad {\tt end} \\
+% 6. {\tt end} \\
+% 7. {\tt for } $k=1 \ldots K$ {\em (Waveform iteration)}\\
+% 8. \quad\quad {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)}\\
+% 9. \quad\quad\quad\quad {\tt for} $t = \Delta t \ldots T$ \\
+% 10.\quad\quad\quad\quad\quad\quad {\tt Solve for } $u_i^{[k]}(t, x)$ \\
+% 11.\quad\quad\quad\quad {\tt end} \\
+% 12.\quad\quad\quad\quad {\tt for} $t = \Delta t \ldots T$ \\
+% 13.\quad\quad\quad\quad\quad\quad {\tt Exchange transmission data} $\mathcal{T}(u_i^{[k]}(t, z))$ \\
+% 14.\quad\quad\quad\quad {\tt end} \\
+% 15.\quad\quad\quad\quad {\tt Check convergence} \\
+% 16.\quad\quad {\tt end}\\
+% 17. {\tt end} \\
+% .\hrulefill  \\
 
-\section{Pipeline Schwarz Waveform Relaxation}
-\label{ongbw_mini_13_sec:pipeline_waveform}
+% \end{table}
+% A pseudo-code for the algorithm is presented on the next page.
+% Observe that SWR allows for each sub-domain to independently compute
+% time-dependent solutions on their respective sub-domains (lines 9-11)
+% During each waveform iteration, transmission data on each sub-domain
+% is aggregated for the entire computational time interval before
+% boundary data is exchanged between neighboring sub-domains (lines
+% 12-14).
+
+% \section{Pipeline Schwarz Waveform Relaxation}
+% \label{prop_sec:pipeline_waveform}
 
 Using a similar approach described in
 \cite{ChristliebMacdonaldOng2010,MR1340665}, the relaxation framework can be
 rewritten so that after initial start-up costs, multiple waveform
 iterations can be computed in a pipeline-parallel fashion. A graphical
 example of the PSWR algorithm for two subdomains is shown in
-Figure~\ref{ongbw_mini_13_sec:pswr_fig}.
+Figure~\ref{prop_sec:pswr_fig}.
 \begin{figure}
   \centering
   \includegraphics[width=0.5\textwidth]{figure1}
@@ -218,71 +190,70 @@ Figure~\ref{ongbw_mini_13_sec:pswr_fig}.
     waveform iterations to be simultaneously computed.  After an
     initial start-up cost, multiple iterates are computed in a
     pipeline fashion.}
-  \label{ongbw_mini_13_sec:pswr_fig}
+  \label{prop_sec:pswr_fig}
 \end{figure}
-To simplify
-the presentation, 
+% To simplify
+% the presentation, 
 %we make the assumption that 
 %
-we first present the algorithm for the simplified case where 
-the {\em same} time discretization is used for all sub-problems
+% we first present the algorithm for the simplified case where 
+% the {\em same} time discretization is used for all sub-problems
 %Generalizations to allow for disparate time discretizations for each
 %sub-problem are possible, but not discussed here.
-(Pipeline Schwarz Waveform Relaxation Algorithm 1).
-\begin{table}[htbp]
-\noindent\hrulefill
-{\bf Pipeline Schwarz Waveform Relaxation Algorithm 1} 
-\hrulefill \\
-1. {\tt MPI Initialization}\\
-2. {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)} \\
-3. \quad\quad {\tt for} $t = \Delta t \ldots T$ \\
-4. \quad\quad\quad\quad {\tt Guess} $u_i^{[0]}(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega_j$\\
-5. \quad\quad {\tt end} \\
-6. \quad\quad {\tt Set} $t^{[0]} = T$\\
-7. {\tt end} \\
-8. {\tt parallel for } $k=1 \ldots K$ {\em (Waveform iteration)}\\
-9. \quad\quad {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)}\\
-10. \quad\quad\quad\quad {\tt set} $t^{[k]} = \Delta t$ \\
-11. \quad\quad\quad\quad {\tt While} $t^{[k]} \le T$ \\
-12. \quad\quad\quad\quad\quad\quad {\tt If } $t^{[k]} < t^{[k-1]}$ \\
-13. \quad\quad\quad\quad\quad\quad\quad\quad {\tt Solve for } $u_i^{[k]}(t^{[k]}, x)$ \\
-14. \quad\quad\quad\quad\quad\quad\quad\quad {\tt Exchange transmission data} $\mathcal{T}(u_i^{[k]}(t^{[k]}, z))$ \\
-15. \quad\quad\quad\quad\quad\quad\quad\quad $t^{[k]} \leftarrow t^{[k]} + \Delta t$\\
-16. \quad\quad\quad\quad\quad\quad {\tt end}\\
-17. \quad\quad\quad\quad {\tt end} \\
-18. \quad\quad\quad\quad {\tt Check convergence} \\
-19. \quad\quad {\tt end}\\
-20. {\tt end} \\
-.\hrulefill  \\
-\end{table}
+% (Pipeline Schwarz Waveform Relaxation Algorithm 1).
+% \begin{table}[htbp]
+% \noindent\hrulefill
+% {\bf Pipeline Schwarz Waveform Relaxation Algorithm 1} 
+% \hrulefill \\
+% 1. {\tt MPI Initialization}\\
+% 2. {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)} \\
+% 3. \quad\quad {\tt for} $t = \Delta t \ldots T$ \\
+% 4. \quad\quad\quad\quad {\tt Guess} $u_i^{[0]}(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega_j$\\
+% 5. \quad\quad {\tt end} \\
+% 6. \quad\quad {\tt Set} $t^{[0]} = T$\\
+% 7. {\tt end} \\
+% 8. {\tt parallel for } $k=1 \ldots K$ {\em (Waveform iteration)}\\
+% 9. \quad\quad {\tt parallel for } $i = 1\ldots N$ {\em (Sub-domain)}\\
+% 10. \quad\quad\quad\quad {\tt set} $t^{[k]} = \Delta t$ \\
+% 11. \quad\quad\quad\quad {\tt While} $t^{[k]} \le T$ \\
+% 12. \quad\quad\quad\quad\quad\quad {\tt If } $t^{[k]} < t^{[k-1]}$ \\
+% 13. \quad\quad\quad\quad\quad\quad\quad\quad {\tt Solve for } $u_i^{[k]}(t^{[k]}, x)$ \\
+% 14. \quad\quad\quad\quad\quad\quad\quad\quad {\tt Exchange transmission data} $\mathcal{T}(u_i^{[k]}(t^{[k]}, z))$ \\
+% 15. \quad\quad\quad\quad\quad\quad\quad\quad $t^{[k]} \leftarrow t^{[k]} + \Delta t$\\
+% 16. \quad\quad\quad\quad\quad\quad {\tt end}\\
+% 17. \quad\quad\quad\quad {\tt end} \\
+% 18. \quad\quad\quad\quad {\tt Check convergence} \\
+% 19. \quad\quad {\tt end}\\
+% 20. {\tt end} \\
+% .\hrulefill  \\
+% \end{table}
 
-Several observations should be made about the proposed PSWR algorithm.
-First, a Schwarz iteration can only proceed if boundary data
-(i.e. transmission conditions) from the previous iterate are
-available; this condition (part of the start-up cost before the PSWR
-algorithm can be run in a pipeline fashion) is checked by the {\tt if}
-statement in line~12.  Secondly, transmission data is exchanged after
-every time step to facilitate the pipeline parallellism.  This added
-synchronization can be relaxed at the expense of increasing the
-start-up cost needed to run this algorithm in a pipeline fashion.
-This pipeline parallelism allows for $N\cdot K$ concurrent processes
-in the PSWR algorithm with efficiency $\frac{N_t}{K+N_t}$ (accounting
-for start-up costs), where $N_t$ is the number of time steps used to
-discretize the time domain $[0,T]$, $N$ is the number of sub-domains,
-$K$ is the number of waveform iterates.  This contrasts with the SWR
-algorithm, which can only utilize $N$ concurrent processes
-corresponding to the $N$ sub-domains.  This increased concurrency in
-PSWR comes with the overhead of an increased number of messages and
-synchronization.
+% Several observations should be made about the proposed PSWR algorithm.
+% First, a Schwarz iteration can only proceed if boundary data
+% (i.e. transmission conditions) from the previous iterate are
+% available; this condition (part of the start-up cost before the PSWR
+% algorithm can be run in a pipeline fashion) is checked by the {\tt if}
+% statement in line~12.  Secondly, transmission data is exchanged after
+% every time step to facilitate the pipeline parallellism.  This added
+% synchronization can be relaxed at the expense of increasing the
+% start-up cost needed to run this algorithm in a pipeline fashion.
+% This pipeline parallelism allows for $N\cdot K$ concurrent processes
+% in the PSWR algorithm with efficiency $\frac{N_t}{K+N_t}$ (accounting
+% for start-up costs), where $N_t$ is the number of time steps used to
+% discretize the time domain $[0,T]$, $N$ is the number of sub-domains,
+% $K$ is the number of waveform iterates.  This contrasts with the SWR
+% algorithm, which can only utilize $N$ concurrent processes
+% corresponding to the $N$ sub-domains.  This increased concurrency in
+% PSWR comes with the overhead of an increased number of messages and
+% synchronization.
 
-For the SWR algorithm, one needs to send $O(K-1)$ message of size
-$O(N_t)$.  If $N\cdot K$ processors are used in a pipeline parallel
-fashion as described in Pipeline Schwarz Waveform Relaxation Algorithm
-1, $O((K-1)\cdot N_t)$ messages of size $O(1)$ are needed.  More generally,
-if $N\cdot p$ processors are used in the PSWR algorithm, where $p<K$
-is a multiple of $K$, then $O((p-1)/p\cdot K\cdot N_t)$ messages of size $O(1)$,
-and $O(K/p-1)$ messages of size $O(N_t)$, are needed.
-%
+% For the SWR algorithm, one needs to send $O(K-1)$ message of size
+% $O(N_t)$.  If $N\cdot K$ processors are used in a pipeline parallel
+% fashion as described in Pipeline Schwarz Waveform Relaxation Algorithm
+% 1, $O((K-1)\cdot N_t)$ messages of size $O(1)$ are needed.  More generally,
+% if $N\cdot p$ processors are used in the PSWR algorithm, where $p<K$
+% is a multiple of $K$, then $O((p-1)/p\cdot K\cdot N_t)$ messages of size $O(1)$,
+% and $O(K/p-1)$ messages of size $O(N_t)$, are needed.
 
 
 %% BIBLIOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
