@@ -186,12 +186,26 @@ Figure~\ref{prop_sec:pswr_fig}.
 \begin{figure}
   \centering
   \includegraphics[width=0.5\textwidth]{figure1}
-  \caption{The proposed PSWR algorithm allows for multiple Schwarz
-    waveform iterations to be simultaneously computed.  After an
-    initial start-up cost, multiple iterates are computed in a
-    pipeline fashion.}
+  \caption{The PSWR algorithm allows for multiple Schwarz waveform
+    iterations to be simultaneously computed.  After an initial
+    start-up cost, multiple iterates are computed in a pipeline
+    fashion.}
   \label{prop_sec:pswr_fig}
 \end{figure}
+
+The pipelined algorithm has several features that make it an
+attractive candidate for implementation in Charm++.  A PSWR iteration
+can only proceed if boundary data (i.e. transmission conditions) from
+the previous iterates are available; however, any iteration can
+proceed for as long as it has updated boundary data regardless of the
+current state of the next (or any other) iteration. In the original
+MPI implementation, transmission data is exchanged after every time
+step, resulting in lock step parallelism. The Charm frameworks ability
+to buffer messages and dynamically schedule processes can be used to
+relax this tight synchronization, better exploiting the problems
+inherent parallelism.
+
+
 % To simplify
 % the presentation, 
 %we make the assumption that 
