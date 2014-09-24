@@ -7,6 +7,10 @@ all : $(PDF_FILE)
 $(PDF_FILE) : convg_plot.png $(TEX_FILE)
 	pdflatex $(TEX_FILE)
 
+force:
+	pdflatex $(TEX_FILE)
+	pdflatex $(TEX_FILE)
+
 convg_plot.png:
 	python convg_plot.py
 
