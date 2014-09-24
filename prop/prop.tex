@@ -17,7 +17,8 @@
 \usepackage{amsbsy}
 \usepackage{amscd}
 \usepackage{amstext}
-\usepackage{dsfont}
+\usepackage{amsmath}
+%\usepackage{dsfont}
 \usepackage[english]{babel}
 \usepackage{color}
 \usepackage{graphics}
@@ -99,29 +100,29 @@ computing successive iterations in a pipeline fashion.
 \label{prop_sec:waveform}
 
 Denote the PDE of interest as 
-\begin{eqnarray}
+\begin{alignat}{2}
   \label{prop_eqn:pde1}
-  u_t =  \mathcal{L}(t,u), \quad (x,t)\in \Omega\times[0,T]\\
+  u_t =&  \mathcal{L}(t,u), \quad &(x,t)\in \Omega\times[0,T]\\
   \nonumber
-  u(x,0) = f(x), \quad x \in \Omega \\
+  u(x,0) =& f(x), \quad &x \in \Omega \\
   \nonumber
-  u(z,t) = g(z,t), \quad z \in \partial\Omega. 
-\end{eqnarray}
+  u(z,t) =& g(z,t), \quad &z \in \partial\Omega. 
+\end{alignat}
 Consider a partitioning of the domain, $\Omega = \cup_i\Omega_i$.
 The domains in the partition may be overlapping or non-overlapping.
 Let $u_i$ denote the solution on sub-domain $\Omega_i$.
 Then, equation~(\ref{prop_eqn:pde1}) can be decomposed into a
 coupled system of equations,
-\begin{eqnarray}
+\begin{alignat}{2}
   \label{prop_eqn:pde2}
-  (u_i)_t =  \mathcal{L}(t,u_i), \quad (x,t)\in \Omega_i\times[0,T]\\
+  (u_i)_t =&  \mathcal{L}(t,u_i), &(x,t)\in \Omega_i\times[0,T]\\
   \nonumber
-  u_i(x,0) = f(x), \quad x \in \Omega_i \\
+  u_i(x,0) =& f(x),  &x \in \Omega_i \\
   \nonumber
-  u_i(z,t) = g(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega, \\
+  u_i(z,t) =& g(z,t),  &z \in \partial\Omega_i\cap\partial\Omega, \\
   \nonumber
-  \mathcal{T}_{ij}(u_{i}(z,t)) = \mathcal{T}_{ij}(u_{j}(z,t)), \quad z \in \partial\Omega_i\cap\partial\Omega_j.
-\end{eqnarray}
+  \mathcal{T}_{ij}(u_{i}(z,t)) =& \mathcal{T}_{ij}(u_{j}(z,t)), &z \in \partial\Omega_i\cap\partial\Omega_j.
+\end{alignat}
 where $T$ are transmission operators appropriate to the
 equation~(\ref{prop_eqn:pde1}).  SWR decouples the system of
 PDEs in equation~(\ref{prop_eqn:pde2}).  Let $u_i^{[k]}$
@@ -131,16 +132,16 @@ interfaces, $u_i^{[0]}(z,t),
 z\in\partial\Omega_i\setminus\partial\Omega$, the SWR algorithm
 iteratively solves PDEs (\ref{prop_eqn:pde3}) for waveform
 iterates $k=1,2,\ldots$ until convergence,
-\begin{eqnarray}
+\begin{alignat}{2}
   \label{prop_eqn:pde3}
-  (u_i^{[k]})_t =  \mathcal{L}(t,u_i^{[k]}), \quad (x,t)\in \Omega_i\times[0,T]\\
+  (u_i^{[k]})_t &=  \mathcal{L}(t,u_i^{[k]}), \quad &(x,t)\in \Omega_i\times[0,T]\\
   \nonumber
-  u_i^{[k]}(x,0) = f(x), \quad x \in \Omega_i \\
+  u_i^{[k]}(x,0) &= f(x), \quad &x \in \Omega_i \\
   \nonumber
-  u_i^{[k]}(z,t) = g(z,t), \quad z \in \partial\Omega_i\cap\partial\Omega, \\
+  u_i^{[k]}(z,t) &= g(z,t), \quad &z \in \partial\Omega_i\cap\partial\Omega, \\
   \nonumber
-  \mathcal{T}_{ij}(u_{i}^{[k]}(z,t)) = \mathcal{T}_{ij}(u_{j}^{[k-1]}(z,t)), \quad z \in \partial\Omega_i\cap\partial\Omega_j.
-\end{eqnarray}
+  \mathcal{T}_{ij}(u_{i}^{[k]}(z,t)) &= \mathcal{T}_{ij}(u_{j}^{[k-1]}(z,t)), \quad &z \in \partial\Omega_i\cap\partial\Omega_j.
+\end{alignat}
 
 % \begin{table}[htbp]
 % \noindent\hrulefill
