@@ -1,0 +1,27 @@
+mainmodule pswr {
+  include "pswr.h";
+  readonly CProxy_Main mainProxy;
+
+  mainchare Main {
+    entry Main(CkArgMsg* m);
+  };
+
+  array [2D] Cell {
+    entry Cell(void);
+
+    entry void run() {
+      while(err < tol) {
+	atomic {
+	  solve(x, y, dt);
+	  for (i = 0; i < nNeighbors; i++) {
+	    neighbors[i].transmit(y, thisIndex);
+	  }
+	}
+	for (i = 0; i < nNeighbors; i++) {
+	  when transmit(y, ind){
+	    updateBoundary(y);
+	  }
+	}	
+    };
+  };
+};
