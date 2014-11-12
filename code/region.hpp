@@ -75,10 +75,13 @@ public:
 
 	/*! Update boundary chunk N
 	 */
-	void update_boundary(boundary_t bndy, int N, std::vector<double> vals);
+	void update_boundary(boundary_t bndy, const double* vals, int N);
 
 	/*! Update the entire boundary
 	 */
-	void update_boundary(boundary_t bndy, std::vector<double> vals);
+	void update_boundary(boundary_t bndy, const double* vals);
+
+	// std::vector<double> get_boundary(...);
+	// msg* get_boundary(...);
 
 };
