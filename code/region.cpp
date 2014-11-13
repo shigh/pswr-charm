@@ -5,7 +5,8 @@ Region::Region(int K_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_):
 	K(K_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_)
 {
-	dt_vals = std::vector<double>(K,    0);
+
+	dt_vals = std::vector<double>(K,     0);
 	x0      = std::vector<double>(nx*ny, 0);
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
@@ -13,6 +14,14 @@ Region::Region(int K_, int nt_, int ny_,
 	south   = std::vector<double>(nx*nt, 0);
 	t = 0;
 	build_solver();
+
+	// Setup chunk logic
+	int cs = (int)nt/K; // chunk size
+	chunk_start = std::vector<int>(K, 0);
+	chunk_size  = std::vector<int>(K, cs);
+	for(int i=0; i<K; i++)
+		chunk_start[i] = cs*i;
+	
 }
 
 void Region::build_solver()

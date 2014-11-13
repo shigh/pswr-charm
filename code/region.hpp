@@ -31,7 +31,9 @@ private:
 	// Boundaries
 	std::vector<double> west, east, north, south;
 
-	int K, nt, ny, nx, t;
+	// Number of chunks
+	int K;
+	int nt, ny, nx, t;
 	double dy, dx;
 
 	// Initialize the PETc solver
@@ -42,7 +44,7 @@ private:
 
 public:
 
-	Region(int K__, int nt_, int ny_, double dy_, int nx_, double dx_);
+	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_);
 
 	/*! Advance one time step
 	 */
