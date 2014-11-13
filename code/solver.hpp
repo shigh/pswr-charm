@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include "utils.hpp"
+
 /*
   Usage:
   Solver s = Solver(ny, dy, nx, dx);
