@@ -3,7 +3,7 @@
 /* c++-tab-always-indent: t */
 /* c-basic-offset: 4 */
 /* c-indent-level: 4 */
-/* tab-stop-list: '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60)) */
+/* tab-stop-list: '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60) */
 /* tab-width: 4 */
 /* indent-tabs-mode: t */
 /* End: */
@@ -31,7 +31,7 @@ private:
 	// Boundaries
 	std::vector<double> west, east, north, south;
 
-	int nt, nT, ny, nx, t;
+	int K, nt, ny, nx, t;
 	double dy, dx;
 
 	// Initialize the PETc solver
@@ -42,18 +42,7 @@ private:
 
 public:
 
-	Region(int nT_, int nt_, int ny_, double dy_, int nx_, double dx_):
-		nT(nT_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_)
-	{
-		dt_vals = std::vector<double>(nT,    0);
-		x0      = std::vector<double>(nx*ny, 0);
-		west    = std::vector<double>(ny*nt, 0);
-		east    = std::vector<double>(ny*nt, 0);
-		north   = std::vector<double>(nx*nt, 0);
-		south   = std::vector<double>(nx*nt, 0);
-		t = 0;
-		build_solver();
-	}
+	Region(int K__, int nt_, int ny_, double dy_, int nx_, double dx_);
 
 	/*! Advance one time step
 	 */
@@ -87,7 +76,10 @@ public:
 	 */
 	void update_boundary(boundary_t bndy, const double* vals);
 
-	// std::vector<double> get_boundary(...);
+	/*! Get boundary chunck N
+	 */
+	std::vector<double> get_boundary(boundary_t bndy, int N);
+
 	// msg* get_boundary(...);
 
 };
