@@ -42,6 +42,8 @@ private:
 	// Apply solver to current t
 	void apply_solver();
 
+	std::vector<double>& get_boundary_vector(boundary_t bndy);
+
 public:
 
 	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_);
@@ -73,10 +75,6 @@ public:
 	/*! Update boundary chunk N
 	 */
 	void update_boundary(boundary_t bndy, const double* vals, int N);
-
-	/*! Update the entire boundary
-	 */
-	void update_boundary(boundary_t bndy, const double* vals);
 
 	/*! Get boundary chunck N
 	 */

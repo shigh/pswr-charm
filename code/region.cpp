@@ -64,13 +64,42 @@ double Region::get_dt(int N)
 	return 0;
 }
 
-void Region::update_boundary(boundary_t bndy, const double* vals, int N)
+std::vector<double>& Region::get_boundary_vector(boundary_t bndy)
 {
+
+	if(bndy==NORTH)
+		return north;
+	else if(bndy==SOUTH)
+		return south;
+	else if(bndy==WEST)
+		return west;
+	else if(bndy==EAST)
+		return east;
 
 }
 
-void Region::update_boundary(boundary_t bndy, const double* vals)
+void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 {
+
+	int n_set = -1;
+	int start = -1;
+	if(bndy==WEST || bndy==EAST)
+	{
+		n_set = ny*chunk_size[N];
+		start = ny*chunk_start[N];
+	}
+	else if(bndy==NORTH || bndy==SOUTH)
+	{
+		n_set = nx*chunk_size[N];
+		start = nx*chunk_start[N];
+	}
+	assert(n_set!=-1);
+
+	std::vector<double>& vec = get_boundary_vector(bndy);
+	for(int i=chunk_start[N];
+		i<chunk_size[N]; i++)
+		for(int j=0; j<n_set; j++)
+			vec[start+j] = vals[j];
 
 }
 

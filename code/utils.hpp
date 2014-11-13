@@ -2,6 +2,7 @@
 #pragma once
 
 #include <vector>
+#include <assert.h>
 
 // I have never had good luck with enums
 typedef int boundary_t;
