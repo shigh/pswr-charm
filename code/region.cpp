@@ -49,7 +49,7 @@ void Region::time_step_chunk(int N)
 
 }
 
-void Region::set_dt(int N, double dt)
+void Region::set_dt(double dt, int N)
 {
 
 }
@@ -75,25 +75,43 @@ std::vector<double>& Region::get_boundary_vector(boundary_t bndy)
 		return west;
 	else if(bndy==EAST)
 		return east;
+	assert(0);
+
+}
+
+int Region::get_chunk_n_elems(boundary_t bndy, int N)
+{
+
+	int n_set = -1;
+	if(bndy==WEST || bndy==EAST)
+		n_set = ny*chunk_size[N];
+	else if(bndy==NORTH || bndy==SOUTH)
+		n_set = nx*chunk_size[N];
+	assert(n_set!=-1);
+
+	return n_set;
+
+}
+
+int Region::get_chunk_elem_start(boundary_t bndy, int N)
+{
+
+	int start = -1;
+	if(bndy==WEST || bndy==EAST)
+		start = ny*chunk_start[N];
+	else if(bndy==NORTH || bndy==SOUTH)
+		start = nx*chunk_start[N];
+	assert(start!=-1);
+
+	return start;
 
 }
 
 void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 {
 
-	int n_set = -1;
-	int start = -1;
-	if(bndy==WEST || bndy==EAST)
-	{
-		n_set = ny*chunk_size[N];
-		start = ny*chunk_start[N];
-	}
-	else if(bndy==NORTH || bndy==SOUTH)
-	{
-		n_set = nx*chunk_size[N];
-		start = nx*chunk_start[N];
-	}
-	assert(n_set!=-1);
+	int n_set = get_chunk_n_elems(bndy, N);
+	int start = get_chunk_elem_start(bndy, N);
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
 	for(int i=chunk_start[N];
@@ -106,26 +124,15 @@ void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 std::vector<double> Region::get_boundary(boundary_t bndy, int N)
 {
 
-	int n_set = -1;
-	int start = -1;
-	if(bndy==WEST || bndy==EAST)
-	{
-		n_set = ny*chunk_size[N];
-		start = ny*chunk_start[N];
-	}
-	else if(bndy==NORTH || bndy==SOUTH)
-	{
-		n_set = nx*chunk_size[N];
-		start = nx*chunk_start[N];
-	}
-	assert(n_set!=-1);
+	int n_set = get_chunk_n_elems(bndy, N);
+	int start = get_chunk_elem_start(bndy, N);
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
 	std::vector<double> vals = std::vector<double>(n_set, 0);
 	for(int i=chunk_start[N];
 		i<chunk_size[N]; i++)
 		for(int j=0; j<n_set; j++)
-			vals[j]= vec[start+j];
+			vals[j] = vec[start+j];
 
 	return vals;
 

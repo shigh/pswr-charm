@@ -44,6 +44,12 @@ private:
 
 	std::vector<double>& get_boundary_vector(boundary_t bndy);
 
+	// number of elements in a chunk
+	int get_chunk_n_elems(boundary_t bndy, int N);
+
+	// The element index where the chunk starts
+	int get_chunk_elem_start(boundary_t bndy, int N);
+
 public:
 
 	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_);
@@ -62,7 +68,7 @@ public:
 
 	/*! Set dt for chunk NT
 	 */
-	void set_dt(int N, double dt);
+	void set_dt(double dt, int N);
 
 	/*! Set dt for at all t
 	 */
