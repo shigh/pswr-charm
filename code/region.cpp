@@ -26,7 +26,7 @@ void Region::set_dt(double dt)
 
 }
 
-void Region::get_dt(int N)
+double Region::get_dt(int N)
 {
 
 }

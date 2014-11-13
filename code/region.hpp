@@ -29,7 +29,7 @@ private:
 	// Initial values
 	std::vector<double> x0;
 	// Boundaries
-	std::vector<double> west, east, north, west;
+	std::vector<double> west, east, north, south;
 
 	int nt, nT, ny, nx, t;
 	double dy, dx;
