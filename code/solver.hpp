@@ -53,7 +53,10 @@ public:
 	// look into that later.
 	void set_rhs(const std::vector<double>& b,
 				 double* west, double* east,
-				 double* north, double* south,
-				 double dt);
+				 double* north, double* south);
+
+    void set_dt(double dt_);
+
+    void get_dt();
 
 };
