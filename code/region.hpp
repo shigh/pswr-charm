@@ -13,7 +13,7 @@
 #pragma once
 
 #include "utils.hpp"
-
+#include "solver.hpp"
 
 class Region
 {
@@ -45,7 +45,7 @@ public:
 	Region(int nT_, int nt_, int ny_, double dy_, int nx_, double dx_):
 		nT(nT_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_)
 	{
-		dt_vals = std::vector<double>(nt,    0);
+		dt_vals = std::vector<double>(nT,    0);
 		x0      = std::vector<double>(nx*ny, 0);
 		west    = std::vector<double>(ny*nt, 0);
 		east    = std::vector<double>(ny*nt, 0);
@@ -75,7 +75,7 @@ public:
 	 */
 	void set_dt(double dt);
 
-	/*! dt at step N
+	/*! dt at chunk N
 	 */
 	double get_dt(int N);
 
