@@ -15,6 +15,6 @@ clean:
 
 # For emacs flymake mode
 check-syntax:
-	$(CC) $(TEST_INCLUDE) $(CXXFLAGS) $(LAPACKINC) -c -o nul -Wall $(CHK_SOURCES)
+	$(CXX) $(CXXFLAGS) -c -o nul -Wall $(CHK_SOURCES)
 
 
