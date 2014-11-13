@@ -1,6 +1,7 @@
-#include <vector>
 
 #pragma once
+
+#include "utils.hpp"
 
 /*
   Usage:
