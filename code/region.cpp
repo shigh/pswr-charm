@@ -51,17 +51,18 @@ void Region::time_step_chunk(int N)
 
 void Region::set_dt(double dt, int N)
 {
-
+	dt_vals[N] = dt;
 }
 
 void Region::set_dt(double dt)
 {
-
+	for(int i=0; i<dt_vals.size(); i++)
+		dt_vals[i] = dt;
 }
 
 double Region::get_dt(int N)
 {
-	return 0;
+	return dt_vals[N];
 }
 
 std::vector<double>& Region::get_boundary_vector(boundary_t bndy)
