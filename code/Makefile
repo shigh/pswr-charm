@@ -6,7 +6,7 @@ OBJS = region.o utils.o solver.o
 
 all: 
 
-# pswr: objs
+#pswr: objs
 
 %.o: %.cpp %.hpp
 

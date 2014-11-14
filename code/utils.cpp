@@ -70,6 +70,5 @@ void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt n
 	}
 
 	MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); 
-	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
-	 
+	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);	 
 }

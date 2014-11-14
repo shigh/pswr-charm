@@ -36,9 +36,7 @@ void Solver::solve(std::vector<double>& x)
 {
 	PetscInt i;
 	PetscScalar s;
-
 	KSPSolve(ksp,rhs,temp);
-
 	for (i = 0; i < nx*ny; i++) {
 		VecGetValues(temp, 1, &i, &s);
 		x[i] = s;
@@ -53,7 +51,6 @@ void Solver::set_rhs(const std::vector<double>& b,
 {
 	// This method assumes that rhs is ordered so that it begins  
 	// with the south border proceeding from west to east
-
 	PetscScalar val;
 	PetscInt i;
 	int j;

@@ -8,8 +8,6 @@
 /* indent-tabs-mode: t */
 /* End: */
 
-
-
 #include <vector>
 #include <petscmat.h>
 #include <petscvec.h>
@@ -48,7 +46,6 @@ public:
 
 	Solver(int ny_, double dy_, int nx_, double dx_);
 	~Solver();
-
 
 	/*! Solve for x in Ax=b
 	 */
