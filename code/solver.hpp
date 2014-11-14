@@ -11,7 +11,9 @@
 
 
 #include <vector>
-
+#include <petscmat.h>
+#include <petscvec.h>
+#include <petscksp.h>
 #pragma once
 
 #include "utils.hpp"
@@ -32,14 +34,20 @@ class Solver
 
 private:
 
-	double dt;
-	int ny, nx;
-	double dy, dx;
-	std::vector<double> rhs;
+	int 	ny, nx;
+	double 	dy, dx;
+	double 	dt;
+
+	Vec rhs;	// right hand side
+	Vec temp;	// PETSc Vec to contain result before copying to c++ vector
+	Mat A;
+	PC pc;		// preconditioner 
+	KSP ksp;	// linear solver context
 
 public:
 
 	Solver(int ny_, double dy_, int nx_, double dx_);
+	~Solver();
 
 
 	/*! Solve for x in Ax=b

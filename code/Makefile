@@ -1,8 +1,8 @@
 
 CXX = g++
 CXXFLAGS  = -g
-DEPS = region.hpp
-OBJS = region.o
+DEPS = region.hpp solver.hpp utils.hpp
+OBJS = region.o utils.o solver.o 
 
 all: 
 
