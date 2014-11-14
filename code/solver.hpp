@@ -39,11 +39,8 @@ private:
 
 public:
 
-	Solver(int ny_, double dy_, int nx_, double dx_):
-		ny(ny_), dy(dy_), nx(nx_), dx(dx_)
-	{
-		rhs = std::vector<double>(nx*ny, 0);
-	}
+	Solver(int ny_, double dy_, int nx_, double dx_);
+
 
 	/*! Solve for x in Ax=b
 	 */
@@ -55,8 +52,8 @@ public:
 				 double* west, double* east,
 				 double* north, double* south);
 
-    void set_dt(double dt_);
+	void set_dt(double dt_);
 
-    void get_dt();
+	double get_dt();
 
 };
