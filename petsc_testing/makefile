@@ -1,11 +1,13 @@
 
-all: OneAndTwoDHeatBTCS
+all: main
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-OneAndTwoDHeatBTCS: OneAndTwoDHeatBTCS.o  chkopts
-	-${CLINKER}  -o OneAndTwoDHeatBTCS OneAndTwoDHeatBTCS.o ${PETSC_MAT_LIB}
-	${RM} OneAndTwoDHeatBTCS.o
+OBJS = OneAndTwoDHeatBTCS.o solver.o
+
+main: main.o ${OBJS} chkopts
+	-${CLINKER} -o main main.o ${OBJS} ${PETSC_MAT_LIB}
+	${RM} main.o ${OBJS}
 
 
