@@ -1,5 +1,6 @@
 
 #include "region.hpp"
+#include "solver.hpp"
 
 Region::Region(int K_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_):
@@ -8,12 +9,13 @@ Region::Region(int K_, int nt_, int ny_,
 
 	dt_vals = std::vector<double>(K,     0);
 	x0      = std::vector<double>(nx*ny, 0);
+	x       = std::vector<double>(nx*ny, 0);
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
 	south   = std::vector<double>(nx*nt, 0);
 	t = 0;
-	build_solver();
+	solver = Solver(ny, dy, nx, dx);
 
 	// Setup chunk logic
 	int cs = (int)nt/K; // chunk size
@@ -24,29 +26,34 @@ Region::Region(int K_, int nt_, int ny_,
 	
 }
 
-void Region::build_solver()
+void Region::update_solver_dt(double dt)
 {
-
+	solver.set_dt(dt);
 }
 
 void Region::apply_solver()
 {
-
+	solver.solve(x);
 }
 
 void Region::time_step()
 {
-
+	apply_solver();
+	++t;
+	// TODO Update boundary arrays
+	// TODO Correctly advance index var
 }
 
-void Region::time_step(int N)
+void Region::time_step(int n_steps)
 {
-
+	for(int i=0; i<n_steps; i++)
+		time_step();
 }
 
 void Region::time_step_chunk(int N)
 {
-
+	int n_steps = chunk_size[N];
+	time_step(n_steps);
 }
 
 void Region::set_dt(double dt, int N)

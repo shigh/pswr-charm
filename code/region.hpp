@@ -37,7 +37,7 @@ private:
 	double dy, dx;
 
 	// Initialize the PETc solver
-	void build_solver();
+	void update_solver_dt(double dt);
 
 	// Apply solver to current t
 	void apply_solver();
@@ -58,9 +58,9 @@ public:
 	 */
 	void time_step();
 
-	/*! Advance N time steps
+	/*! Advance n_steps time steps
 	 */
-	void time_step(int N);
+	void time_step(int n_steps);
 	
 	/*! Advance each step in chunck N
 	 */
