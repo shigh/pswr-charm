@@ -40,6 +40,9 @@ private:
 	int nt, ny, nx, t;
 	double dy, dx;
 
+	// Overlap logic
+	int overlap;
+
 	// Initialize the PETc solver
 	void update_solver_dt(double dt);
 
@@ -56,7 +59,7 @@ private:
 
 public:
 
-	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_,
+	Region(int K_, int overlap, int nt_, int ny_, double dy_, int nx_, double dx_,
 		   std::shared_ptr<Solver> solver);
 
 	/*! Advance one time step

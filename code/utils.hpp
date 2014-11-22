@@ -15,4 +15,6 @@ typedef int boundary_t;
 
 void one_d_heat_BTCS(Mat &A, PetscInt n, PetscReal dx, PetscReal dt);
 void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, bool init);
+void partition_domain(std::vector<std::size_t>& start, std::vector<std::size_t>& end,
+					  const std::size_t N, const std::size_t n, const std::size_t k);
 

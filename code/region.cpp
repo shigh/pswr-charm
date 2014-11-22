@@ -2,10 +2,10 @@
 #include "region.hpp"
 #include "solver.hpp"
 
-Region::Region(int K_, int nt_, int ny_,
+Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
 			   std::shared_ptr<Solver> solver_):
-	K(K_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_), solver(solver_)
+	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_), solver(solver_)
 {
 
 	dt_vals = std::vector<double>(K,     0);
