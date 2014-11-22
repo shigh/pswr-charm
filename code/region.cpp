@@ -15,15 +15,18 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
 	south   = std::vector<double>(nx*nt, 0);
-	t = 0;
 
 	// Setup chunk logic
+	// TODO Handle case where nt not a multiple of K
 	int cs = (int)nt/K; // chunk size
 	chunk_start = std::vector<int>(K, 0);
 	chunk_size  = std::vector<int>(K, cs);
 	for(int i=0; i<K; i++)
 		chunk_start[i] = cs*i;
-	
+	chunk_size[K-1] = nt-cs*(K-1);
+	curr_chunk     = 0;
+	curr_chunk_ind = 0;
+	curr_ind       = 0;
 }
 
 void Region::update_solver_dt(double dt)
@@ -39,9 +42,18 @@ void Region::apply_solver()
 void Region::time_step()
 {
 	apply_solver();
-	++t;
+
+	++curr_chunk_ind;
+	++curr_ind;
+	if(curr_chunk_ind == chunk_size[curr_chunk])
+	{
+		++curr_chunk;
+		curr_chunk_ind = 0;
+		curr_ind = chunk_start[curr_chunk];
+	}
+
 	// TODO Update boundary arrays
-	// TODO Correctly advance index var
+	
 }
 
 void Region::time_step(int n_steps)

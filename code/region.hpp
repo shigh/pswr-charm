@@ -37,7 +37,10 @@ private:
 
 	// Number of chunks
 	int K;
-	int nt, ny, nx, t;
+	int curr_chunk, curr_chunk_ind, curr_ind;
+
+	// Model params
+	int nt, ny, nx;
 	double dy, dx;
 
 	// Overlap logic
