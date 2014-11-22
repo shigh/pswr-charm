@@ -28,6 +28,7 @@ $(TOBJS): %.o: tests/%.cpp $(DEPS)
 
 clean:
 	rm -vf nul *.o *.a
+	rm -rf testsuite
 
 # For emacs flymake mode
 check-syntax:
