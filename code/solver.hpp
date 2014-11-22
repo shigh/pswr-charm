@@ -30,11 +30,40 @@
 class Solver
 {
 
-private:
+protected:
 
 	int 	ny, nx;
 	double 	dy, dx;
 	double 	dt;
+
+public:
+
+	Solver(int ny_, double dy_, int nx_, double dx_):
+		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
+
+	virtual ~Solver() {};
+
+	/*! Solve for x in Ax=b
+	 */
+	virtual void solve(std::vector<double>& x) = 0;
+
+	// It would probablly be better to do this with iterators. We can
+	// look into that later.
+	virtual void set_rhs(const std::vector<double>& b,
+						 double* west, double* east,
+						 double* north, double* south) = 0;
+
+	virtual void set_dt(double dt_) = 0;
+
+	double get_dt();
+
+};
+
+
+class HeatSolverBTCS: public Solver
+{
+
+private:
 
 	Vec rhs;	// right hand side
 	Vec temp;	// PETSc Vec to contain result before copying to c++ vector
@@ -45,32 +74,16 @@ private:
 
 public:
 
-	Solver(int ny_, double dy_, int nx_, double dx_);
-	~Solver();
+	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
 
-	/*! Solve for x in Ax=b
-	 */
 	void solve(std::vector<double>& x);
 
-	// It would probablly be better to do this with iterators. We can
-	// look into that later.
 	void set_rhs(const std::vector<double>& b,
 				 double* west, double* east,
 				 double* north, double* south);
 
 	void set_dt(double dt_);
 
-	double get_dt();
-
-};
-
-
-class HeatSolverBTCS: public Solver
-{
-
-public:
-
-	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
-		Solver(ny_, dy_, nx_, dx_)
-	{};
+	~HeatSolverBTCS();
+	
 };

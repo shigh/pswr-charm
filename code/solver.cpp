@@ -2,8 +2,20 @@
 #include "solver.hpp"
 #include <iostream>
 
-Solver::Solver(int ny_, double dy_, int nx_, double dx_):
-	ny(ny_), nx(nx_), dy(dy_), dx(dx_)
+
+double Solver::get_dt()
+{
+	return dt;
+}
+
+void HeatSolverBTCS::set_dt(double dt_)
+{
+	// Recreating A just to update dt is inefficient. We will do this differently later.
+	two_d_heat_BTCS(A, dt_, ny, dy, nx, dx, false);
+}
+
+HeatSolverBTCS::HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
+	Solver(ny_, dy_, nx_, dx_)
 {
 	// Create a sparse matrix A
 	two_d_heat_BTCS(A, 1.0, ny, dy, nx, dx, true);
@@ -25,7 +37,7 @@ Solver::Solver(int ny_, double dy_, int nx_, double dx_):
 	VecSetFromOptions(temp);
 }
 
-Solver::~Solver()
+HeatSolverBTCS::~HeatSolverBTCS()
 {
 	VecDestroy(&rhs);
 	MatDestroy(&A);
@@ -33,7 +45,7 @@ Solver::~Solver()
 
 /*! Solve for x in Ax=b
  */
-void Solver::solve(std::vector<double>& x)
+void HeatSolverBTCS::solve(std::vector<double>& x)
 {
 	PetscInt i;
 	PetscScalar s;
@@ -47,9 +59,9 @@ void Solver::solve(std::vector<double>& x)
 
 // It would probablly be better to do this with iterators. We can
 // look into that later.
-void Solver::set_rhs(const std::vector<double>& b,
-					 double* west, double* east,
-					 double* north, double* south)
+void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
+							 double* west, double* east,
+							 double* north, double* south)
 {
 	// This method assumes that rhs is ordered so that it begins  
 	// with the south border proceeding from west to east
@@ -90,16 +102,5 @@ void Solver::set_rhs(const std::vector<double>& b,
 		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
 	}
 
-}
-
-void Solver::set_dt(double dt_)
-{
-	// Recreating A just to update dt is inefficient. We will do this differently later.
-	two_d_heat_BTCS(A, dt_, ny, dy, nx, dx, false);
-}
-
-double Solver::get_dt()
-{
-	return dt;
 }
 
