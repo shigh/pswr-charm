@@ -87,3 +87,24 @@ public:
 	~HeatSolverBTCS();
 	
 };
+
+// Used for testing
+// Sets x to dt in solve
+class DummySolver: public Solver
+{
+
+public:
+
+	DummySolver(int ny_, double dy_, int nx_, double dx_);
+
+	void solve(std::vector<double>& x);
+
+	void set_rhs(const std::vector<double>& b,
+				 double* west, double* east,
+				 double* north, double* south);
+
+	void set_dt(double dt_);
+
+	~DummySolver();
+	
+};

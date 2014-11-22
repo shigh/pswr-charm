@@ -12,6 +12,7 @@ void HeatSolverBTCS::set_dt(double dt_)
 {
 	// Recreating A just to update dt is inefficient. We will do this differently later.
 	two_d_heat_BTCS(A, dt_, ny, dy, nx, dx, false);
+	dt = dt_;
 }
 
 HeatSolverBTCS::HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
@@ -19,7 +20,6 @@ HeatSolverBTCS::HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
 {
 	// Create a sparse matrix A
 	two_d_heat_BTCS(A, 1.0, ny, dy, nx, dx, true);
-
 	// set up linear solver context (ksp) and preconditioner (pc)
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 	KSPSetOperators(ksp,A,A);
@@ -102,5 +102,34 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
 	}
 
+}
+
+void DummySolver::set_dt(double dt_)
+{
+	dt = dt_;
+}
+
+DummySolver::DummySolver(int ny_, double dy_, int nx_, double dx_):
+	Solver(ny_, dy_, nx_, dx_)
+{
+}
+
+DummySolver::~DummySolver()
+{
+}
+
+/*! Solve for x in Ax=b
+ */
+void DummySolver::solve(std::vector<double>& x)
+{
+	for(auto i=0; i<x.size(); i++)
+		x[i] = dt;
+}
+
+void DummySolver::set_rhs(const std::vector<double>& b,
+						  double* west, double* east,
+						  double* north, double* south)
+{
+	// Nothing to see here...
 }
 
