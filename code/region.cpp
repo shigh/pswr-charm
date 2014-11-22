@@ -3,8 +3,9 @@
 #include "solver.hpp"
 
 Region::Region(int K_, int nt_, int ny_,
-			   double dy_, int nx_, double dx_):
-	K(K_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_)
+			   double dy_, int nx_, double dx_,
+			   std::shared_ptr<Solver> solver_):
+	K(K_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_), solver(solver_)
 {
 
 	dt_vals = std::vector<double>(K,     0);
@@ -15,7 +16,6 @@ Region::Region(int K_, int nt_, int ny_,
 	north   = std::vector<double>(nx*nt, 0);
 	south   = std::vector<double>(nx*nt, 0);
 	t = 0;
-	solver = Solver(ny, dy, nx, dx);
 
 	// Setup chunk logic
 	int cs = (int)nt/K; // chunk size
@@ -28,12 +28,12 @@ Region::Region(int K_, int nt_, int ny_,
 
 void Region::update_solver_dt(double dt)
 {
-	solver.set_dt(dt);
+	solver->set_dt(dt);
 }
 
 void Region::apply_solver()
 {
-	solver.solve(x);
+	solver->solve(x);
 }
 
 void Region::time_step()

@@ -8,10 +8,10 @@
 /* indent-tabs-mode: t */
 /* End: */
 
-#include <vector>
-
 #pragma once
 
+#include <vector>
+#include <memory>
 #include "utils.hpp"
 #include "solver.hpp"
 
@@ -20,7 +20,7 @@ class Region
 
 private:
 
-	Solver solver;
+	std::shared_ptr<Solver> solver;
 
 	// dt at each time step
 	std::vector<double> dt_vals;
@@ -56,7 +56,8 @@ private:
 
 public:
 
-	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_);
+	Region(int K_, int nt_, int ny_, double dy_, int nx_, double dx_,
+		   std::shared_ptr<Solver> solver);
 
 	/*! Advance one time step
 	 */
