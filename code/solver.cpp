@@ -1,5 +1,6 @@
 
 #include "solver.hpp"
+#include <iostream>
 
 Solver::Solver(int ny_, double dy_, int nx_, double dx_):
 	ny(ny_), nx(nx_), dy(dy_), dx(dx_)
@@ -36,7 +37,8 @@ void Solver::solve(std::vector<double>& x)
 {
 	PetscInt i;
 	PetscScalar s;
-	KSPSolve(ksp,rhs,temp);
+	KSPSolve(ksp, rhs, temp);
+	KSPGetConvergedReason(ksp, &reason);
 	for (i = 0; i < nx*ny; i++) {
 		VecGetValues(temp, 1, &i, &s);
 		x[i] = s;
@@ -46,49 +48,48 @@ void Solver::solve(std::vector<double>& x)
 // It would probablly be better to do this with iterators. We can
 // look into that later.
 void Solver::set_rhs(const std::vector<double>& b,
-		double* west, double* east,
-		double* north, double* south)
+					 double* west, double* east,
+					 double* north, double* south)
 {
 	// This method assumes that rhs is ordered so that it begins  
 	// with the south border proceeding from west to east
 	PetscScalar val;
-	PetscInt i;
 	int j;
 
 	// Set the south boundary values.
-	for (i = 0; i < nx; i++)
+	for (int i = 0; i < nx; i++)
 	{
 		val = south[i];
-		VecSetValues(rhs,1,&i,&val,INSERT_VALUES);
+		VecSetValues(rhs, 1, &i, &val, INSERT_VALUES);
 	} 
 
-	// At this point i = nx. 
-	for ( ; i < nx*(ny-1); i++)
+	// Set interior boundary values
+	for (int i=nx; i<nx*(ny-1); i++)
 	{
 		val = b[i];
-		VecSetValues(rhs,1,&i,&val,INSERT_VALUES);
+		VecSetValues(rhs, 1, &i, &val, INSERT_VALUES);
 	}
 
-	// Now i = nx*(ny-1). Set the north boundary values.
-	j = 0;
-	for ( ; i < nx*ny; i++)
+	// Set north boundary values
+	for(int i=0; i<nx; i++)
 	{
-		val = north[j];
-		VecSetValues(rhs,1,&i,&val,INSERT_VALUES);
-		j++;
-	} 
-
-	// Set the east and west border values
-	j = 0;
-	for (i = 0; i < nx*ny; i++)
-	{
-		val = west[j];
-		VecSetValues(rhs,1,&i,&val,INSERT_VALUES);
-		i = i+nx-1;
-		val = east[j];
-		VecSetValues(rhs,1,&i,&val,INSERT_VALUES);
-		j++;
+		j = i+nx*(ny-1);
+		val = north[i];
+		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
 	}
+
+	// Set the east and west boundary values
+	for (int i=0; i<ny; i++)
+	{
+		j = i*nx;
+		val = west[i];
+		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
+
+		j = (i+1)*nx-1;
+		val = east[i];
+		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
+	}
+
 }
 
 void Solver::set_dt(double dt_)

@@ -55,7 +55,7 @@ void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt n
 			MatSetValue(A,m,m,1,INSERT_VALUES);
 
 			// Differentials
-			if (i!=0 && j!=0 && i!=ny-1 && j!=nx-1) {
+			if (i!=0 && j!=0 && i!=nx-1 && j!=ny-1) {
 
 				// x-direction
 				MatSetValue(A,m,m,1+2*kx+2*ky,INSERT_VALUES);

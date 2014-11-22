@@ -41,6 +41,7 @@ private:
 	Mat A;
 	PC pc;		// preconditioner 
 	KSP ksp;	// linear solver context
+	KSPConvergedReason reason;
 
 public:
 
@@ -61,4 +62,15 @@ public:
 
 	double get_dt();
 
+};
+
+
+class HeatSolverBTCS: public Solver
+{
+
+public:
+
+	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
+		Solver(ny_, dy_, nx_, dx_)
+	{};
 };
