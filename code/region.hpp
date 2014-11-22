@@ -20,6 +20,8 @@ class Region
 
 private:
 
+	Solver solver;
+
 	// dt at each time step
 	std::vector<double> dt_vals;
 	// N where the chunk starts
@@ -28,6 +30,8 @@ private:
 	std::vector<int> chunk_size;
 	// Initial values
 	std::vector<double> x0;
+	// Temp vector
+	std::vector<double> x;
 	// Boundaries
 	std::vector<double> west, east, north, south;
 
