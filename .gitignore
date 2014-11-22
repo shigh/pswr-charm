@@ -26,3 +26,6 @@
 *.exe
 *.out
 *.app
+
+# Setup script
+setup.sh
