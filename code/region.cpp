@@ -186,17 +186,15 @@ int Region::get_start_index(boundary_t bndy, int chunk, int chunk_ind)
 
 }
 
-void Region::update_boundary(boundary_t bndy, const double* vals, int N)
+void Region::set_boundary(boundary_t bndy, const double* vals, int N)
 {
 
 	int n_set = get_chunk_n_elems(bndy, N);
 	int start = get_chunk_start_index(bndy, N);
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
-	for(int i=chunk_start[N];
-		i<chunk_size[N]; i++)
-		for(int j=0; j<n_set; j++)
-			vec[start+j] = vals[j];
+	for(int i=0; i<n_set; i++)
+		vec[i+start] = vals[i];
 
 }
 

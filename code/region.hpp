@@ -90,9 +90,9 @@ public:
 	 */
 	double get_chunk_size(int N);
 
-	/*! Update boundary chunk N
+	/*! Set boundary chunk N
 	 */
-	void update_boundary(boundary_t bndy, const double* vals, int N);
+	void set_boundary(boundary_t bndy, const double* vals, int N);
 
 	/*! Get boundary chunck N
 	 */
