@@ -4,12 +4,12 @@
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
-			   std::shared_ptr<Solver> solver_):
-	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_), solver(solver_)
+			   std::vector<double> x0_, std::shared_ptr<Solver> solver_):
+	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_),
+	x0(x0_), solver(solver_)
 {
 
 	dt_vals = std::vector<double>(K,     0);
-	x0      = std::vector<double>(nx*ny, 0);
 	x       = std::vector<double>(nx*ny, 0);
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
@@ -27,6 +27,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	curr_chunk     = 0;
 	curr_chunk_ind = 0;
 	curr_ind       = 0;
+	solver->set_dt(dt_vals[curr_chunk]);
 }
 
 void Region::update_solver_dt(double dt)
@@ -39,9 +40,9 @@ void Region::apply_solver()
 	solver->solve(x);
 }
 
+#include <iostream>
 void Region::time_step()
 {
-	apply_solver();
 
 	++curr_chunk_ind;
 	++curr_ind;
@@ -50,10 +51,47 @@ void Region::time_step()
 		++curr_chunk;
 		curr_chunk_ind = 0;
 		curr_ind = chunk_start[curr_chunk];
+		solver->set_dt(dt_vals[curr_chunk]);
 	}
 
-	// TODO Update boundary arrays
+	std::cout << curr_chunk << ' ' << curr_chunk_ind << ' '
+			  << dt_vals[curr_chunk] << ' '
+			  << chunk_size[curr_chunk] << std::endl;
+
+	// Update solver boundarys
+	double* west  = &west[get_curr_start(WEST)];
+	double* east  = &east[get_curr_start(EAST)];
+	double* north = &north[get_curr_start(NORTH)];
+	double* south = &south[get_curr_start(SOUTH)];
+
+	solver->set_rhs(x, west, east, north, south);
+
+	apply_solver();
+
+	update_boundary_arrays();
 	
+}
+
+void Region::update_boundary_arrays()
+{
+
+	int start;
+	start = get_curr_start(EAST);
+	for(int i=0; i<ny; i++)
+		east[start+i] = x[i*nx+overlap];
+
+	start = get_curr_start(WEST);
+	for(int i=0; i<ny; i++)
+		west[start+i] = x[(i+1)*nx-1-overlap];
+
+	start = get_curr_start(NORTH);
+	for(int i=0; i<nx; i++)
+		north[start+i] = x[(ny-1)*nx+i-overlap*nx];
+
+	start = get_curr_start(SOUTH);
+	for(int i=0; i<nx; i++)
+		north[start+i] = x[i+overlap*nx];
+
 }
 
 void Region::time_step(int n_steps)
@@ -62,15 +100,23 @@ void Region::time_step(int n_steps)
 		time_step();
 }
 
-void Region::time_step_chunk(int N)
+void Region::time_step_chunk()
 {
-	int n_steps = chunk_size[N];
+	std::cout << "------------" << std::endl;
+	int n_steps = chunk_size[curr_chunk];
+	// Handle the known initial values
+	if(curr_chunk==0) --n_steps;
+
 	time_step(n_steps);
+
+	std::cout << "------------" << std::endl;
 }
 
 void Region::set_dt(double dt, int N)
 {
 	dt_vals[N] = dt;
+	if(N=curr_chunk)
+		solver->set_dt(dt_vals[curr_chunk]);
 }
 
 void Region::set_dt(double dt)
@@ -126,6 +172,21 @@ int Region::get_chunk_elem_start(boundary_t bndy, int N)
 	return start;
 
 }
+
+int Region::get_curr_start(boundary_t bndy)
+{
+
+	int start = -1;
+	if(bndy==WEST || bndy==EAST)
+		start = ny*chunk_start[curr_chunk]+ny*curr_chunk_ind;
+	else if(bndy==NORTH || bndy==SOUTH)
+		start = nx*chunk_start[curr_chunk]+nx*curr_chunk_ind;
+	assert(start!=-1);
+
+	return start;
+
+}
+
 
 void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 {

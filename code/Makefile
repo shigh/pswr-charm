@@ -8,7 +8,7 @@ TLDLIBS += -lboost_unit_test_framework
 
 DEPS  = region.hpp solver.hpp utils.hpp
 OBJS  = region.o utils.o solver.o
-TOBJS = testsuite.o test_utils.o test_solver.o
+TOBJS = testsuite.o test_utils.o test_solver.o test_region.o
 
 
 all: $(OBJS)

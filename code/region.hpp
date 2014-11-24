@@ -38,6 +38,8 @@ private:
 	// Number of chunks
 	int K;
 	int curr_chunk, curr_chunk_ind, curr_ind;
+	// Get the index of current chunk start point
+	int get_curr_start(boundary_t bndy);
 
 	// Model params
 	int nt, ny, nx;
@@ -51,6 +53,7 @@ private:
 
 	// Apply solver to current t
 	void apply_solver();
+	void update_boundary_arrays();
 
 	std::vector<double>& get_boundary_vector(boundary_t bndy);
 
@@ -63,7 +66,7 @@ private:
 public:
 
 	Region(int K_, int overlap, int nt_, int ny_, double dy_, int nx_, double dx_,
-		   std::shared_ptr<Solver> solver);
+		   std::vector<double> x0, std::shared_ptr<Solver> solver);
 
 	/*! Advance one time step
 	 */
@@ -75,7 +78,7 @@ public:
 	
 	/*! Advance each step in chunck N
 	 */
-	void time_step_chunk(int N);
+	void time_step_chunk();
 
 	/*! Set dt for chunk NT
 	 */
