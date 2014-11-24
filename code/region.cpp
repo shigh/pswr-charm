@@ -25,9 +25,10 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 		chunk_start[i] = cs*i;
 	chunk_size[K-1] = nt-cs*(K-1);
 	curr_chunk     = 0;
-	curr_chunk_ind = 0;
-	curr_ind       = 0;
+	curr_chunk_ind = 1;
+	curr_ind       = 1;
 	solver->set_dt(dt_vals[curr_chunk]);
+
 }
 
 void Region::update_solver_dt(double dt)
@@ -44,19 +45,12 @@ void Region::apply_solver()
 void Region::time_step()
 {
 
-	++curr_chunk_ind;
-	++curr_ind;
-	if(curr_chunk_ind == chunk_size[curr_chunk])
-	{
-		++curr_chunk;
-		curr_chunk_ind = 0;
-		curr_ind = chunk_start[curr_chunk];
-		solver->set_dt(dt_vals[curr_chunk]);
-	}
 
 	std::cout << curr_chunk << ' ' << curr_chunk_ind << ' '
 			  << dt_vals[curr_chunk] << ' '
-			  << chunk_size[curr_chunk] << std::endl;
+			  << solver->get_dt() << ' ' 
+			  << chunk_size[curr_chunk] << ' '
+			  << get_curr_start(EAST) << std::endl;
 
 	// Update solver boundarys
 	double* west  = &west[get_curr_start(WEST)];
@@ -69,6 +63,17 @@ void Region::time_step()
 	apply_solver();
 
 	update_boundary_arrays();
+
+	++curr_chunk_ind;
+	++curr_ind;
+	if(curr_chunk_ind == chunk_size[curr_chunk])
+	{
+		++curr_chunk;
+		curr_chunk_ind = 0;
+		curr_ind = chunk_start[curr_chunk];
+		solver->set_dt(dt_vals[curr_chunk]);
+	}
+
 	
 }
 
@@ -90,7 +95,7 @@ void Region::update_boundary_arrays()
 
 	start = get_curr_start(SOUTH);
 	for(int i=0; i<nx; i++)
-		north[start+i] = x[i+overlap*nx];
+		south[start+i] = x[i+overlap*nx];
 
 }
 
@@ -115,7 +120,7 @@ void Region::time_step_chunk()
 void Region::set_dt(double dt, int N)
 {
 	dt_vals[N] = dt;
-	if(N=curr_chunk)
+	if(N==curr_chunk)
 		solver->set_dt(dt_vals[curr_chunk]);
 }
 
@@ -210,10 +215,9 @@ std::vector<double> Region::get_boundary(boundary_t bndy, int N)
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
 	std::vector<double> vals = std::vector<double>(n_set, 0);
-	for(int i=chunk_start[N];
-		i<chunk_size[N]; i++)
-		for(int j=0; j<n_set; j++)
-			vals[j] = vec[start+j];
+
+	for(int i=0; i<n_set; i++)
+		vals[i] = vec[i+start];
 
 	return vals;
 

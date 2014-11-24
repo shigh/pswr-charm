@@ -36,19 +36,20 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 {
 
 	int N = 10;
-	int K = 2;
-	int nt = 7;
+	int K = 5;
+	int nt = 20;
 	double d = .1;
 
-	auto x0 = std::vector<double>(N*N, 0);
+	auto x0 = std::vector<double>(N*N, 1.);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
 	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
 
+
 	for(int i=0; i<K; i++)
-	{
 		region.set_dt(i+1, i);
+		
+	for(int i=0; i<K; i++)
 		region.time_step_chunk();
-	}
 
 	for(int i=0; i<K; i++)
 	{
@@ -56,6 +57,19 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 		for(auto i:bndy)
 			std::cout << i << ' ';
 		std::cout << std::endl;
+		bndy = region.get_boundary(WEST, i);
+		for(auto i:bndy)
+			std::cout << i << ' ';
+		std::cout << std::endl;
+		bndy = region.get_boundary(NORTH, i);
+		for(auto i:bndy)
+			std::cout << i << ' ';
+		std::cout << std::endl;
+		bndy = region.get_boundary(SOUTH, i);
+		for(auto i:bndy)
+			std::cout << i << ' ';
+		std::cout << std::endl;
+
 	}
 
 	for(int i=0; i<K; i++)
