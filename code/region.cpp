@@ -10,7 +10,6 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 {
 
 	dt_vals = std::vector<double>(K,     0);
-	x = x0; // Copy x0 into x
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
@@ -27,10 +26,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 
 	// Set the time t==0 boundary array values to
 	// the intial values
-	curr_chunk     = 0;
-	curr_chunk_ind = 0;
-	curr_ind       = 0;
-	update_boundary_arrays();
+	update_boundary_arrays(x0, 0, 0);
 
 	reset();
 
@@ -61,7 +57,7 @@ void Region::time_step()
 
 	solver->solve(x);
 
-	update_boundary_arrays();
+	update_boundary_arrays(x, curr_chunk, curr_chunk_ind);
 
 	++curr_chunk_ind;
 	++curr_ind;
@@ -75,25 +71,25 @@ void Region::time_step()
 	
 }
 
-void Region::update_boundary_arrays()
+void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind)
 {
 
 	int start;
-	start = get_curr_start_index(EAST);
+	start = get_start_index(EAST, chunk, chunk_ind);
 	for(int i=0; i<ny; i++)
-		east[start+i] = x[i*nx+overlap];
+		east[start+i] = vec[i*nx+overlap];
 
-	start = get_curr_start_index(WEST);
+	start = get_start_index(WEST, chunk, chunk_ind);
 	for(int i=0; i<ny; i++)
-		west[start+i] = x[(i+1)*nx-1-overlap];
+		west[start+i] = vec[(i+1)*nx-1-overlap];
 
-	start = get_curr_start_index(NORTH);
+	start = get_start_index(NORTH, chunk, chunk_ind);
 	for(int i=0; i<nx; i++)
-		north[start+i] = x[(ny-1)*nx+i-overlap*nx];
+		north[start+i] = vec[(ny-1)*nx+i-overlap*nx];
 
-	start = get_curr_start_index(SOUTH);
+	start = get_start_index(SOUTH, chunk, chunk_ind);
 	for(int i=0; i<nx; i++)
-		south[start+i] = x[i+overlap*nx];
+		south[start+i] = vec[i+overlap*nx];
 
 }
 
@@ -172,17 +168,23 @@ int Region::get_chunk_start_index(boundary_t bndy, int N)
 int Region::get_curr_start_index(boundary_t bndy)
 {
 
+	return get_start_index(bndy, curr_chunk, curr_chunk_ind);
+
+}
+
+int Region::get_start_index(boundary_t bndy, int chunk, int chunk_ind)
+{
+
 	int start = -1;
 	if(bndy==WEST || bndy==EAST)
-		start = ny*chunk_start[curr_chunk]+ny*curr_chunk_ind;
+		start = ny*chunk_start[chunk]+ny*chunk_ind;
 	else if(bndy==NORTH || bndy==SOUTH)
-		start = nx*chunk_start[curr_chunk]+nx*curr_chunk_ind;
+		start = nx*chunk_start[chunk]+nx*chunk_ind;
 	assert(start!=-1);
 
 	return start;
 
 }
-
 
 void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 {

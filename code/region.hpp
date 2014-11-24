@@ -46,7 +46,7 @@ private:
 	// Overlap logic
 	int overlap;
 
-	void update_boundary_arrays();
+	void update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind);
 
 	std::vector<double>& get_boundary_vector(boundary_t bndy);
 
@@ -57,6 +57,8 @@ private:
 	int get_chunk_start_index(boundary_t bndy, int N);
 	// Get the index of current chunk start point
 	int get_curr_start_index(boundary_t bndy);
+	// First index of a boundary in chunk
+	int get_start_index(boundary_t bndy, int chunk, int chunk_ind);
 	// ---
 
 	// Advance one time step
