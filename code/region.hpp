@@ -72,6 +72,10 @@ public:
 	 */
 	void time_step_chunk();
 
+	/*! Reset to start new iteration
+	 */
+	void reset();
+
 	/*! Set dt for chunk NT
 	 */
 	void set_dt(double dt, int N);

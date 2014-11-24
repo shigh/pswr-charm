@@ -10,7 +10,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 {
 
 	dt_vals = std::vector<double>(K,     0);
-	x       = x0; // Copy x0 into x
+	x = x0; // Copy x0 into x
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
@@ -32,7 +32,15 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	curr_ind       = 0;
 	update_boundary_arrays();
 
-	// Set initial state
+	reset();
+
+}
+
+void Region::reset()
+{
+
+	x = x0; // Copy x0 into x
+	// Set region to initial state
 	curr_chunk     = 0;
 	curr_chunk_ind = 1;
 	curr_ind       = 1;
