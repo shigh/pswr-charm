@@ -38,8 +38,6 @@ private:
 	// Number of chunks
 	int K;
 	int curr_chunk, curr_chunk_ind, curr_ind;
-	// Get the index of current chunk start point
-	int get_curr_start(boundary_t bndy);
 
 	// Model params
 	int nt, ny, nx;
@@ -48,45 +46,35 @@ private:
 	// Overlap logic
 	int overlap;
 
-	// Initialize the PETc solver
-	void update_solver_dt(double dt);
-
-	// Apply solver to current t
-	void apply_solver();
 	void update_boundary_arrays();
 
 	std::vector<double>& get_boundary_vector(boundary_t bndy);
 
-	// number of elements in a chunk
+	// ---These functions are usefull for indexing into the bndy arrays
+	// Total number of elements in a chunk
 	int get_chunk_n_elems(boundary_t bndy, int N);
-
 	// The element index where the chunk starts
-	int get_chunk_elem_start(boundary_t bndy, int N);
+	int get_check_start_index(boundary_t bndy, int N);
+	// Get the index of current chunk start point
+	int get_curr_start_index(boundary_t bndy);
+	// ---
+
+	// Advance one time step
+	void time_step();
 
 public:
 
 	Region(int K_, int overlap, int nt_, int ny_, double dy_, int nx_, double dx_,
 		   std::vector<double> x0, std::shared_ptr<Solver> solver);
 
-	/*! Advance one time step
-	 */
-	void time_step();
 
-	/*! Advance n_steps time steps
-	 */
-	void time_step(int n_steps);
-	
-	/*! Advance each step in chunck N
+	/*! Advance each step in chunk N
 	 */
 	void time_step_chunk();
 
 	/*! Set dt for chunk NT
 	 */
 	void set_dt(double dt, int N);
-
-	/*! Set dt for at all t
-	 */
-	void set_dt(double dt);
 
 	/*! dt at chunk N
 	 */

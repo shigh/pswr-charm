@@ -32,7 +32,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	curr_ind       = 0;
 	update_boundary_arrays();
 
-	// Set the 
+	// Set initial state
 	curr_chunk     = 0;
 	curr_chunk_ind = 1;
 	curr_ind       = 1;
@@ -40,28 +40,18 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 
 }
 
-void Region::update_solver_dt(double dt)
-{
-	solver->set_dt(dt);
-}
-
-void Region::apply_solver()
-{
-	solver->solve(x);
-}
-
 void Region::time_step()
 {
 
 	// Update solver boundarys
-	double* west  = &west[get_curr_start(WEST)];
-	double* east  = &east[get_curr_start(EAST)];
-	double* north = &north[get_curr_start(NORTH)];
-	double* south = &south[get_curr_start(SOUTH)];
+	double* west  = &west[get_curr_start_index(WEST)];
+	double* east  = &east[get_curr_start_index(EAST)];
+	double* north = &north[get_curr_start_index(NORTH)];
+	double* south = &south[get_curr_start_index(SOUTH)];
 
 	solver->set_rhs(x, west, east, north, south);
 
-	apply_solver();
+	solver->solve(x);
 
 	update_boundary_arrays();
 
@@ -81,28 +71,22 @@ void Region::update_boundary_arrays()
 {
 
 	int start;
-	start = get_curr_start(EAST);
+	start = get_curr_start_index(EAST);
 	for(int i=0; i<ny; i++)
 		east[start+i] = x[i*nx+overlap];
 
-	start = get_curr_start(WEST);
+	start = get_curr_start_index(WEST);
 	for(int i=0; i<ny; i++)
 		west[start+i] = x[(i+1)*nx-1-overlap];
 
-	start = get_curr_start(NORTH);
+	start = get_curr_start_index(NORTH);
 	for(int i=0; i<nx; i++)
 		north[start+i] = x[(ny-1)*nx+i-overlap*nx];
 
-	start = get_curr_start(SOUTH);
+	start = get_curr_start_index(SOUTH);
 	for(int i=0; i<nx; i++)
 		south[start+i] = x[i+overlap*nx];
 
-}
-
-void Region::time_step(int n_steps)
-{
-	for(int i=0; i<n_steps; i++)
-		time_step();
 }
 
 void Region::time_step_chunk()
@@ -112,7 +96,8 @@ void Region::time_step_chunk()
 	// Handle the known initial values
 	if(curr_chunk==0) --n_steps;
 
-	time_step(n_steps);
+	for(int i=0; i<n_steps; i++)
+		time_step();
 
 }
 
@@ -121,12 +106,6 @@ void Region::set_dt(double dt, int N)
 	dt_vals[N] = dt;
 	if(N==curr_chunk)
 		solver->set_dt(dt_vals[curr_chunk]);
-}
-
-void Region::set_dt(double dt)
-{
-	for(int i=0; i<dt_vals.size(); i++)
-		dt_vals[i] = dt;
 }
 
 double Region::get_dt(int N)
@@ -168,7 +147,7 @@ int Region::get_chunk_n_elems(boundary_t bndy, int N)
 
 }
 
-int Region::get_chunk_elem_start(boundary_t bndy, int N)
+int Region::get_check_start_index(boundary_t bndy, int N)
 {
 
 	int start = -1;
@@ -182,7 +161,7 @@ int Region::get_chunk_elem_start(boundary_t bndy, int N)
 
 }
 
-int Region::get_curr_start(boundary_t bndy)
+int Region::get_curr_start_index(boundary_t bndy)
 {
 
 	int start = -1;
@@ -201,7 +180,7 @@ void Region::update_boundary(boundary_t bndy, const double* vals, int N)
 {
 
 	int n_set = get_chunk_n_elems(bndy, N);
-	int start = get_chunk_elem_start(bndy, N);
+	int start = get_check_start_index(bndy, N);
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
 	for(int i=chunk_start[N];
@@ -215,7 +194,7 @@ std::vector<double> Region::get_boundary(boundary_t bndy, int N)
 {
 
 	int n_set = get_chunk_n_elems(bndy, N);
-	int start = get_chunk_elem_start(bndy, N);
+	int start = get_check_start_index(bndy, N);
 
 	std::vector<double>& vec = get_boundary_vector(bndy);
 	std::vector<double> vals = std::vector<double>(n_set, 0);
