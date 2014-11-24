@@ -92,6 +92,10 @@ public:
 	 */
 	double get_dt(int N);
 
+	/*! Number of steps in chunk N
+	 */
+	double get_chunk_size(int N);
+
 	/*! Update boundary chunk N
 	 */
 	void update_boundary(boundary_t bndy, const double* vals, int N);

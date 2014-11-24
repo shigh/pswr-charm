@@ -10,7 +10,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 {
 
 	dt_vals = std::vector<double>(K,     0);
-	x       = std::vector<double>(nx*ny, 0);
+	x       = x0; // Copy x0 into x
 	west    = std::vector<double>(ny*nt, 0);
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
@@ -24,6 +24,15 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	for(int i=0; i<K; i++)
 		chunk_start[i] = cs*i;
 	chunk_size[K-1] = nt-cs*(K-1);
+
+	// Set the time t==0 boundary array values to
+	// the intial values
+	curr_chunk     = 0;
+	curr_chunk_ind = 0;
+	curr_ind       = 0;
+	update_boundary_arrays();
+
+	// Set the 
 	curr_chunk     = 0;
 	curr_chunk_ind = 1;
 	curr_ind       = 1;
@@ -133,6 +142,11 @@ void Region::set_dt(double dt)
 double Region::get_dt(int N)
 {
 	return dt_vals[N];
+}
+
+double Region::get_chunk_size(int N)
+{
+	return chunk_size[N];
 }
 
 std::vector<double>& Region::get_boundary_vector(boundary_t bndy)
