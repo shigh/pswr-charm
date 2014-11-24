@@ -37,13 +37,16 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	int N = 10;
 	int K = 5;
-	int nt = 20;
 	double d = .1;
+	// Do not set nt as a multiple of K to make sure we check
+	// that region correctly handles this case
+	int nt = 21; 
 
+	// Set x0 to ones so the chunk 0 boundaries will all be one
+	// (The first N values will be whatever is in x0)
 	auto x0 = std::vector<double>(N*N, 1.);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
 	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
-
 
 	for(int i=0; i<K; i++)
 		region.set_dt(i+1, i);
@@ -53,28 +56,21 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	for(int i=0; i<K; i++)
 	{
+		auto expected = std::vector<double>(region.get_chunk_size(i)*N, i+1);
+
 		auto bndy = region.get_boundary(EAST, i);
-		for(auto i:bndy)
-			std::cout << i << ' ';
-		std::cout << std::endl;
+		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
+
 		bndy = region.get_boundary(WEST, i);
-		for(auto i:bndy)
-			std::cout << i << ' ';
-		std::cout << std::endl;
+		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
+
 		bndy = region.get_boundary(NORTH, i);
-		for(auto i:bndy)
-			std::cout << i << ' ';
-		std::cout << std::endl;
+		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
+
 		bndy = region.get_boundary(SOUTH, i);
-		for(auto i:bndy)
-			std::cout << i << ' ';
-		std::cout << std::endl;
+		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
 
 	}
-
-	for(int i=0; i<K; i++)
-		std::cout << region.get_dt(i) << ' ';
-	std::cout << std::endl;
 
 }
 

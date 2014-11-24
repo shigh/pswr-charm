@@ -50,16 +50,8 @@ void Region::apply_solver()
 	solver->solve(x);
 }
 
-#include <iostream>
 void Region::time_step()
 {
-
-
-	std::cout << curr_chunk << ' ' << curr_chunk_ind << ' '
-			  << dt_vals[curr_chunk] << ' '
-			  << solver->get_dt() << ' ' 
-			  << chunk_size[curr_chunk] << ' '
-			  << get_curr_start(EAST) << std::endl;
 
 	// Update solver boundarys
 	double* west  = &west[get_curr_start(WEST)];
@@ -82,7 +74,6 @@ void Region::time_step()
 		curr_ind = chunk_start[curr_chunk];
 		solver->set_dt(dt_vals[curr_chunk]);
 	}
-
 	
 }
 
@@ -116,14 +107,13 @@ void Region::time_step(int n_steps)
 
 void Region::time_step_chunk()
 {
-	std::cout << "------------" << std::endl;
+
 	int n_steps = chunk_size[curr_chunk];
 	// Handle the known initial values
 	if(curr_chunk==0) --n_steps;
 
 	time_step(n_steps);
 
-	std::cout << "------------" << std::endl;
 }
 
 void Region::set_dt(double dt, int N)
