@@ -54,7 +54,7 @@ private:
 	// Total number of elements in a chunk
 	int get_chunk_n_elems(boundary_t bndy, int N);
 	// The element index where the chunk starts
-	int get_check_start_index(boundary_t bndy, int N);
+	int get_chunk_start_index(boundary_t bndy, int N);
 	// Get the index of current chunk start point
 	int get_curr_start_index(boundary_t bndy);
 	// ---
