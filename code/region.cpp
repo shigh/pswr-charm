@@ -48,12 +48,12 @@ void Region::time_step()
 {
 
 	// Update solver boundarys
-	double* west  = &west[get_curr_start_index(WEST)];
-	double* east  = &east[get_curr_start_index(EAST)];
-	double* north = &north[get_curr_start_index(NORTH)];
-	double* south = &south[get_curr_start_index(SOUTH)];
+	double* pwest  = &west[get_curr_start_index(WEST)];
+	double* peast  = &east[get_curr_start_index(EAST)];
+	double* pnorth = &north[get_curr_start_index(NORTH)];
+	double* psouth = &south[get_curr_start_index(SOUTH)];
 
-	solver->set_rhs(x, west, east, north, south);
+	solver->set_rhs(x, pwest, peast, pnorth, psouth);
 
 	solver->solve(x);
 
@@ -212,4 +212,9 @@ std::vector<double> Region::get_boundary(boundary_t bndy, int N)
 
 	return vals;
 
+}
+
+std::vector<double> Region::get_x()
+{
+	return x;
 }

@@ -100,4 +100,6 @@ public:
 
 	// msg* get_boundary(...);
 
+	std::vector<double> get_x();
+
 };

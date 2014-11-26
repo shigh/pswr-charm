@@ -145,4 +145,57 @@ BOOST_AUTO_TEST_CASE( region_get_set_boundary )
 
 }
 
+BOOST_AUTO_TEST_CASE( region_zero_boundary_convg )
+{
+	// Using a general solution of the form:
+	// u(x, y, t) = sin(kx)sin(ky)exp(-2k^2 t)
+	// on a square domain
+	// Make sure that the region class correctly handles
+	// the solver over many time steps
+
+	double tol = 0.01; // Good enough for government work...
+
+	int N = 200;
+	int K = 5;
+	int nt = 20;
+	int ind;
+	double dx, dt, L, k;
+	double xj, yi;
+
+	L  = M_PI;
+	k  = 1.;
+	dt = .01;
+	dx = L/((double)(N-1));
+	
+	auto x0       = std::vector<double>(N*N, 0);
+	auto expected = std::vector<double>(N*N, 0);
+	for(int i=0; i<N; i++)
+		for(int j=0; j<N; j++)
+		{
+			ind = j + i*N;
+			xj = j*dx;
+			yi = i*dx;
+			x0[ind]       = sin(k*xj)*sin(k*yi);
+			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
+		}
+
+	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(N, dx, N, dx);
+	Region region = Region(K, 0, nt, N, dx, N, dx, x0, solver);
+
+	for(int i=0; i<K; i++)
+		region.set_dt(dt, i);
+		
+	for(int i=0; i<K; i++)
+		region.time_step_chunk();
+
+	auto x = region.get_x();
+
+	double error = 0.;
+	for(int i=0; i<N*N; i++)
+		error = std::max(error, std::abs(expected[i] - x[i]));
+
+	BOOST_CHECK_LT( error, tol );
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()
