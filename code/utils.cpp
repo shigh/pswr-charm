@@ -73,17 +73,17 @@ void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt n
 	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);	 
 }
 
-void partition_domain(std::vector<std::size_t>& start, std::vector<std::size_t>& end,
-					  const std::size_t N, const std::size_t n, const std::size_t k)
+void partition_domain(std::vector<int>& start, std::vector<int>& end,
+					  const int N, const int n, const int k)
 {
 
 	start.resize(n);
 	end.resize(n);
 
-	const std::size_t domain_size = round(((double)(N+(n-1)*(1+k)))/((double)n));
+	const int domain_size = round(((double)(N+(n-1)*(1+k)))/((double)n));
 
-	std::size_t last_end = k;
-	for(std::size_t i=0; i<n; i++)
+	int last_end = k;
+	for(int i=0; i<n; i++)
 	{
 		start[i] = last_end-k;
 		end[i]   = last_end-k+domain_size;
