@@ -75,13 +75,13 @@ void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, i
 {
 
 	int start;
-	start = get_start_index(EAST, chunk, chunk_ind);
-	for(int i=0; i<ny; i++)
-		east[start+i] = vec[i*nx+overlap];
-
 	start = get_start_index(WEST, chunk, chunk_ind);
 	for(int i=0; i<ny; i++)
-		west[start+i] = vec[(i+1)*nx-1-overlap];
+		west[start+i] = vec[i*nx+overlap];
+
+	start = get_start_index(EAST, chunk, chunk_ind);
+	for(int i=0; i<ny; i++)
+		east[start+i] = vec[(i+1)*nx-1-overlap];
 
 	start = get_start_index(NORTH, chunk, chunk_ind);
 	for(int i=0; i<nx; i++)
