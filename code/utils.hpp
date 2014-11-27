@@ -8,10 +8,10 @@
 // I have never had good luck with enums
 typedef int boundary_t;
 
-#define WEST  (boundary_t)0
-#define EAST  (boundary_t)1
-#define NORTH (boundary_t)2
-#define SOUTH (boundary_t)3
+#define WEST  (boundary_t)0x01 // 0000 0001
+#define EAST  (boundary_t)0x02 // 0000 0010
+#define NORTH (boundary_t)0x04 // 0000 0100
+#define SOUTH (boundary_t)0x08 // 0000 1000
 
 void one_d_heat_BTCS(Mat &A, PetscInt n, PetscReal dx, PetscReal dt);
 void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, bool init);
