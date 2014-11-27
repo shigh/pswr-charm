@@ -17,21 +17,6 @@
 
 BOOST_AUTO_TEST_SUITE( region_tests )
 
-BOOST_AUTO_TEST_CASE( region_constructor )
-{
-	// Check for explosions
-	int N = 10;
-	int K = 5;
-	int nt = 20;
-	double d = .1;
-
-	auto x0 = std::vector<double>(N*N, 0);
-	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
-
-	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
-
-}
-
 BOOST_AUTO_TEST_CASE( region_time_step )
 {
 
