@@ -14,6 +14,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	east    = std::vector<double>(ny*nt, 0);
 	north   = std::vector<double>(nx*nt, 0);
 	south   = std::vector<double>(nx*nt, 0);
+	west_const = east_const = north_const = south_const = false;
 
 	// Setup chunk logic
 	// TODO Handle case where nt not a multiple of K
@@ -75,21 +76,33 @@ void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, i
 {
 
 	int start;
-	start = get_start_index(WEST, chunk, chunk_ind);
-	for(int i=0; i<ny; i++)
-		west[start+i] = vec[i*nx+overlap];
+	if(!west_const)
+	{
+		start = get_start_index(WEST, chunk, chunk_ind);
+		for(int i=0; i<ny; i++)
+			west[start+i] = vec[i*nx+overlap];
+	}
 
-	start = get_start_index(EAST, chunk, chunk_ind);
-	for(int i=0; i<ny; i++)
-		east[start+i] = vec[(i+1)*nx-1-overlap];
+	if(!east_const)
+	{
+		start = get_start_index(EAST, chunk, chunk_ind);
+		for(int i=0; i<ny; i++)
+			east[start+i] = vec[(i+1)*nx-1-overlap];
+	}
 
-	start = get_start_index(NORTH, chunk, chunk_ind);
-	for(int i=0; i<nx; i++)
-		north[start+i] = vec[(ny-1)*nx+i-overlap*nx];
+	if(!north_const)
+	{
+		start = get_start_index(NORTH, chunk, chunk_ind);
+		for(int i=0; i<nx; i++)
+			north[start+i] = vec[(ny-1)*nx+i-overlap*nx];
+	}
 
-	start = get_start_index(SOUTH, chunk, chunk_ind);
-	for(int i=0; i<nx; i++)
-		south[start+i] = vec[i+overlap*nx];
+	if(!south_const)
+	{
+		start = get_start_index(SOUTH, chunk, chunk_ind);
+		for(int i=0; i<nx; i++)
+			south[start+i] = vec[i+overlap*nx];
+	}
 
 }
 
@@ -217,4 +230,14 @@ std::vector<double> Region::get_boundary(boundary_t bndy, int N)
 std::vector<double> Region::get_x()
 {
 	return x;
+}
+
+void Region::hold_constant(boundary_t bndy)
+{
+
+	west_const  = WEST  & bndy;
+	east_const  = EAST  & bndy;
+	north_const = NORTH & bndy;
+	south_const = SOUTH & bndy;
+
 }

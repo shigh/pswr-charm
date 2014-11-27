@@ -34,6 +34,7 @@ private:
 	std::vector<double> x;
 	// Boundaries
 	std::vector<double> west, east, north, south;
+	bool west_const, east_const, north_const, south_const;
 
 	// Number of chunks
 	int K;
@@ -101,5 +102,12 @@ public:
 	// msg* get_boundary(...);
 
 	std::vector<double> get_x();
+
+	/*! Do not change bndy in time stepper
+	 *
+	 * This is to mark domain boundarys so they are not
+	 * overwritten.
+	 */
+	void hold_constant(boundary_t bndy);
 
 };
