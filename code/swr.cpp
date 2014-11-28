@@ -3,6 +3,7 @@
 #include <string>
 #include "pup_stl.h"
 #include "swr.hpp"
+#include "region.hpp"
 #include "SWRCharm.decl.h"
 
 /*readonly*/ CProxy_Main mainProxy;
@@ -27,6 +28,8 @@ public:
 		// cells = CProxy_Cell::ckNew(cellDimension, cellDimension);
 
 		// thisProxy.run_simulation();
+
+		CkExit();
 
     }
 

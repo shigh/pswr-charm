@@ -1,6 +1,6 @@
 
 CXX = g++
-CXXFLAGS  = -g --std=c++11
+CXXFLAGS = -g --std=c++11
 
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
 LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc
@@ -9,7 +9,7 @@ TLDLIBS += -lboost_unit_test_framework
 DEPS  = region.hpp solver.hpp utils.hpp
 OBJS  = region.o utils.o solver.o
 TOBJS = testsuite.o test_utils.o test_solver.o test_region.o
-
+COBJS = swr.o
 
 all: $(OBJS)
 
@@ -17,7 +17,7 @@ test: testsuite
 	./testsuite --log_level=test_suite
 
 testsuite: $(TOBJS) $(OBJS)
-	$(CXX)  -o $@ $^ $(LDLIBS) $(TLDLIBS)
+	$(CXX) -o $@ $^ $(LDLIBS) $(TLDLIBS)
 
 $(OBJS): %.o: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
@@ -25,23 +25,22 @@ $(OBJS): %.o: %.cpp $(DEPS)
 $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
-CHARMC = ~/src/charm/net-linux-x86_64/bin/charmc $(OPTS)
-TESTOPTS = ++local
+test-swr: swr
+	./charmrun ++local +p4 ./swr
 
-COBJS = swr.o
-
-swr: $(COBJS)
-	$(CHARMC) -O3 -language charm++ -o swr $(COBJS)
+swr: $(COBJS) $(OBJS)
+	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS)
 
 SWRCharm.decl.h: swr.ci
 	$(CHARMC)  swr.ci
 
 swr.o: swr.cpp SWRCharm.decl.h
-	$(CHARMC) -c swr.cpp
+	$(CHARMC) $(CXXFLAGS) $(INC) -c swr.cpp
 
 clean:
 	rm -vf nul *.o *.a
-	rm -rf testsuite
+	rm -rf testsuite swr charmrun
+	rm -rf *.decl.h *.def.h
 
 # For emacs flymake mode
 check-syntax:
