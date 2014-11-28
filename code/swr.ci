@@ -22,7 +22,7 @@ mainmodule SWRCharm
 						int gny, double dy, int gnx, double dx,
 						int GNx, int GNy);
 
-		entry void set_boundary(boundary_t bndy, std::vector<double> vec);
+		entry void set_boundary(int iter, boundary_t bndy, std::vector<double> vec);
 
 		entry void run_simulation(int n_iter)
 		{
@@ -35,28 +35,26 @@ mainmodule SWRCharm
 					region->time_step_chunk();
 
 					if(comm_west)
-						domainProxy(west,thisIndex.y).set_boundary(EAST,
+						domainProxy(west,thisIndex.y).set_boundary(iteration, EAST,
 																   region->get_boundary(WEST, 0));
 					if(comm_east)
-						domainProxy(east,thisIndex.y).set_boundary(WEST,
+						domainProxy(east,thisIndex.y).set_boundary(iteration, WEST,
 																   region->get_boundary(EAST, 0));
 					if(comm_north)
-						domainProxy(thisIndex.x,north).set_boundary(SOUTH,
+						domainProxy(thisIndex.x,north).set_boundary(iteration, SOUTH,
 																	region->get_boundary(NORTH, 0));
 					if(comm_south)
-						domainProxy(thisIndex.x,south).set_boundary(NORTH,
+						domainProxy(thisIndex.x,south).set_boundary(iteration, NORTH,
 																	region->get_boundary(SOUTH, 0));
 				}
 
-				when set_boundary(boundary_t bndy, std::vector<double> vec)
-					serial
+				for(recv=0; recv<n_recv; recv++)
 				{
-					region->set_boundary(bndy, &vec[0], 0);
-				}
-				when set_boundary(boundary_t bndy, std::vector<double> vec)
-					serial
-				{
-					region->set_boundary(bndy, &vec[0], 0);
+					when set_boundary[iteration](int iter, boundary_t bndy, std::vector<double> vec)
+						serial
+					{
+						region->set_boundary(bndy, &vec[0], 0);
+					}
 				}
 
 				serial

@@ -24,10 +24,10 @@ public:
 		 mainProxy = thisProxy;
 
 		 count = 0;
-		 N = 2;
+		 N = 3;
 
-		 int nx = 200;
-		 int ny = 200;
+		 int nx = 100*N;
+		 int ny = 100*N;
 
 		 int K = 1;
 		 int overlap = 20;
@@ -41,7 +41,7 @@ public:
 		 dx = L/((double)(nx-1));
 
 		 domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
-		 domainProxy.run_simulation(5);
+		 domainProxy.run_simulation(10);
 
     }
 
@@ -80,7 +80,7 @@ private:
 
 	std::vector<double> x0, expected;
 
-	int iteration, n_recv;
+	int iteration, n_recv, recv;
 
 public:
 
