@@ -33,8 +33,8 @@ COBJS = swr.o
 swr: $(COBJS)
 	$(CHARMC) -O3 -language charm++ -o swr $(COBJS)
 
-SWRCharm.decl.h: pswr.ci
-	$(CHARMC)  pswr.ci
+SWRCharm.decl.h: swr.ci
+	$(CHARMC)  swr.ci
 
 swr.o: swr.cpp SWRCharm.decl.h
 	$(CHARMC) -c swr.cpp
