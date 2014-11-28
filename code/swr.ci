@@ -3,17 +3,21 @@ mainmodule SWRCharm
 
 	include "swr.hpp";
 	readonly CProxy_Main mainProxy;
-
+	readonly CProxy_SWRDomain domainProxy;
+	
 	mainchare Main
 	{
 		entry Main(CkArgMsg* m);
+
+		entry void callback();
 
 	};
 
 	array [2D] SWRDomain
 	{
 
-		entry SWRDomain(void);
+		entry SWRDomain(int K, int overlap_, int nt, int gny, double dy, int gnx, double dx,
+						int GNx, int GNy);
 
 	};
 };
