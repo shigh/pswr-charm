@@ -14,34 +14,39 @@ class Main: public CBase_Main
 {
 private:
 
-	int N, count;
+	int N, Lpi, n_iter, count;
 
 public:
 
     Main(CkArgMsg* m)
 	{
 
-		 mainProxy = thisProxy;
+		if(m->argc < 4) CkAbort("Expects 3 args: N domains (each dimension), L, n_iter");
 
-		 count = 0;
-		 N = 3;
+		N      = atoi(m->argv[1]);
+		Lpi    = atoi(m->argv[2]);
+		n_iter = atoi(m->argv[3]);
+		delete m;
 
-		 int nx = 100*N;
-		 int ny = 100*N;
+		mainProxy = thisProxy;
 
-		 int K = 1;
-		 int overlap = 20;
-		 int nt = 10;
-		 int ind;
-		 double dx, dt, L, k;
+		count = 0;
+		int nx = 100*N;
+		int ny = 100*N;
 
-		 L  = 2*M_PI;
-		 k  = 1.;
-		 dt = .01;
-		 dx = L/((double)(nx-1));
+		int K = 1;
+		int overlap = 20;
+		int nt = 10;
+		int ind;
+		double dx, dt, L, k;
 
-		 domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
-		 domainProxy.run_simulation(10);
+		L  = Lpi*M_PI;
+		k  = 1.;
+		dt = .01;
+		dx = L/((double)(nx-1));
+
+		domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
+		domainProxy.run_simulation(10);
 
     }
 

@@ -26,7 +26,7 @@ $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 test-swr: swr
-	./charmrun ++local +p4 ./swr
+	./charmrun ++local +p4 ./swr 3 2 10
 
 swr: $(COBJS) $(OBJS)
 	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS)
