@@ -40,7 +40,8 @@ public:
 		 dt = .01;
 		 dx = L/((double)(N-1));
 
-		 domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, nx, dx, nx, dx, N, N, N, N);
+		 domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
+		 domainProxy.run_simulation(5);
 
     }
 
@@ -58,6 +59,8 @@ class SWRDomain: public CBase_SWRDomain
 
 private:
 
+	SWRDomain_SDAG_CODE
+
 	std::shared_ptr<Region> region;
 
 
@@ -69,18 +72,25 @@ private:
 	// K = number of chunks
 	int K, overlap;
 	int nt, ny, nx;
-	double dy, dx;
+	double dt, dy, dx;
 
 	int west, east, north, south;
+	bool comm_west, comm_east, comm_north, comm_south;
+
 	int xstart, xend, ystart, yend;
+
+	std::vector<double> x0, expected;
+
+	int iteration, n_recv;
 
 public:
 
 	SWRDomain(CkMigrateMessage* M) {}
 
-    SWRDomain(int K_, int overlap_, int nt_, int gny_, double dy_, int gnx_, double dx_,
+    SWRDomain(int K_, int overlap_, int nt_, double dt_,
+			  int gny_, double dy_, int gnx_, double dx_,
 			  int GNx_, int GNy_):
-		K(K_), overlap(overlap_), nt(nt_), gny(gny_), dy(dy_), gnx(gnx_), dx(dx_),
+		K(K_), overlap(overlap_), nt(nt_), dt(dt_), gny(gny_), dy(dy_), gnx(gnx_), dx(dx_),
 		GNx(GNx_), GNy(GNy_)
 	{
 
@@ -98,26 +108,47 @@ public:
 		nx = xend-xstart;
 		ny = yend-ystart;
 
-		auto x0 = std::vector<double>(ny*nx, 0);
+		build_x0_expected();
 		std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(ny, dy, nx, dx);
  		region = std::make_shared<Region>(K, overlap, nt, ny, dy, nx, dx, x0, solver);
+		region->set_dt(dt, 0);
 
 		west  = thisIndex.x>0     ? thisIndex.x-1:-1;
 		east  = thisIndex.x<GNx-1 ? thisIndex.x+1:-1;
 		north = thisIndex.y<GNy-1 ? thisIndex.y+1:-1;
 		south = thisIndex.y>0     ? thisIndex.y-1:-1;
 
-		run_simulation();
+		comm_west  = west!=-1;
+		comm_east  = east!=-1;
+		comm_north = north!=-1;
+		comm_south = south!=-1;
+
+		n_recv = 0;
+		if(comm_west)  ++n_recv;
+		if(comm_east)  ++n_recv;
+		if(comm_north) ++n_recv;
+		if(comm_south) ++n_recv;
 
 	}
 
-	void run_simulation()
+	void build_x0_expected()
 	{
 
-		region->set_dt(.1, 0);
-		region->time_step_chunk();
+		x0       = std::vector<double>(ny*nx, 0);
+		expected = std::vector<double>(ny*nx, 0);
 
-		mainProxy.callback();
+		double k = 1.;
+		double xj, yi;
+		int ind;
+		for(int i=0; i<ny; i++)
+			for(int j=0; j<nx; j++)
+			{
+				ind = j + i*nx;
+				xj  = (j+xstart)*dx;
+				yi  = (i+ystart)*dy;
+				x0[ind]       = sin(k*xj)*sin(k*yi);
+				expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
+			}
 
 	}
 
