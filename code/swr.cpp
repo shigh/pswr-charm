@@ -38,7 +38,7 @@ public:
 		 L  = 2*M_PI;
 		 k  = 1.;
 		 dt = .01;
-		 dx = L/((double)(N-1));
+		 dx = L/((double)(nx-1));
 
 		 domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
 		 domainProxy.run_simulation(5);
@@ -62,7 +62,6 @@ private:
 	SWRDomain_SDAG_CODE
 
 	std::shared_ptr<Region> region;
-
 
 	// Global ny/nx
 	int gny, gnx;
@@ -94,8 +93,10 @@ public:
 		GNx(GNx_), GNy(GNy_)
 	{
 
+		PetscInitializeNoArguments();
+
 		auto start = std::vector<int>(GNx, 0);
-		auto end   = std::vector<int>(GNy, 0);
+		auto end   = std::vector<int>(GNx, 0);
 
 		partition_domain(start, end, gnx, GNx, overlap);
 		xstart = start[thisIndex.x];
@@ -109,26 +110,71 @@ public:
 		ny = yend-ystart;
 
 		build_x0_expected();
-		std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(ny, dy, nx, dx);
+		std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(ny, dy, nx, dx);
  		region = std::make_shared<Region>(K, overlap, nt, ny, dy, nx, dx, x0, solver);
 		region->set_dt(dt, 0);
 
-		west  = thisIndex.x>0     ? thisIndex.x-1:-1;
-		east  = thisIndex.x<GNx-1 ? thisIndex.x+1:-1;
-		north = thisIndex.y<GNy-1 ? thisIndex.y+1:-1;
-		south = thisIndex.y>0     ? thisIndex.y-1:-1;
-
-		comm_west  = west!=-1;
-		comm_east  = east!=-1;
-		comm_north = north!=-1;
-		comm_south = south!=-1;
-
+		int hold_constant = 0;
 		n_recv = 0;
-		if(comm_west)  ++n_recv;
-		if(comm_east)  ++n_recv;
-		if(comm_north) ++n_recv;
-		if(comm_south) ++n_recv;
+		if(thisIndex.x>0)
+		{
+			west = thisIndex.x-1;
+			comm_west = true;
+			++n_recv;
+		}
+		else
+		{
+			west = -1;
+			comm_west = false;
+			hold_constant |= WEST;
+		}
 
+		if(thisIndex.x<GNx-1)
+		{
+			east = thisIndex.x+1;
+			comm_east = true;
+			++n_recv;
+		}
+		else
+		{
+			east = -1;
+			comm_east = false;
+			hold_constant |= EAST;
+		}
+
+		if(thisIndex.y>0)
+		{
+			south = thisIndex.y-1;
+			comm_south = true;
+			++n_recv;
+		}
+		else
+		{
+			south = -1;
+			comm_south = false;
+			hold_constant |= SOUTH;
+		}
+
+		if(thisIndex.y<GNy-1)
+		{
+			north = thisIndex.y+1;
+			comm_north = true;
+			++n_recv;
+		}
+		else
+		{
+			north = -1;
+			comm_north = false;
+			hold_constant |= NORTH;
+		}
+
+		region->hold_constant(hold_constant);
+
+	}
+
+	~SWRDomain()
+	{
+		PetscFinalize();
 	}
 
 	void build_x0_expected()
