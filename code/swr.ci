@@ -11,7 +11,8 @@ mainmodule SWRCharm
 	{
 		entry Main(CkArgMsg* m);
 
-		entry void callback();
+		// End of simulation callback
+		entry void done();
 
 	};
 
@@ -88,7 +89,7 @@ mainmodule SWRCharm
 			// Phone home
 			serial
 			{
-				mainProxy.callback();
+				mainProxy.done();
 			}
 			
 		};

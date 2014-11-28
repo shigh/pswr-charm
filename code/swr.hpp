@@ -21,7 +21,7 @@ public:
     Main(CkArgMsg* m);
 
 	// Termination callback
-	void callback();
+	void done();
 
 };
 

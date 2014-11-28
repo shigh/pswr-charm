@@ -37,7 +37,7 @@ Main::Main(CkArgMsg* m)
 
 }
 
-void Main::callback()
+void Main::done()
 {
 	if(++count==N*N)
 		CkExit();
