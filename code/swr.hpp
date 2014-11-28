@@ -1,5 +1,78 @@
-#ifndef PARTICLE_H
-#define PARTICLE_H
+
+#pragma once
+
+#include <stdlib.h>
+#include <vector>
+#include <string>
+#include "pup_stl.h"
+#include "region.hpp"
+#include "solver.hpp"
+#include "SWRCharm.decl.h"
 
 
-#endif
+class Main: public CBase_Main
+{
+private:
+
+	int N, Lpi, n_iter, count;
+
+public:
+
+    Main(CkArgMsg* m);
+
+	// Termination callback
+	void callback();
+
+};
+
+
+class SWRDomain: public CBase_SWRDomain
+{
+
+private:
+
+	SWRDomain_SDAG_CODE
+
+	std::shared_ptr<Region> region;
+
+	// Global ny/ny/nx
+	int nt, gny, gnx;
+	double dt, dy, dx;
+	// Local ny/nx
+	int ny, nx, overlap;
+	
+	// Number of domains
+	int GNx, GNy;
+	// K = number of chunks
+	int K;
+
+	// Domain indexes
+	int west, east, north, south;
+	// Domains to communicate with
+	bool comm_west, comm_east, comm_north, comm_south;
+
+	// This domains start and end grid points
+	int xstart, xend, ystart, yend;
+
+	// Internal tmp vectors
+	std::vector<double> x0, expected;
+
+	// Charm variables for iteration logic
+	int iteration, n_recv, recv;
+
+public:
+
+	SWRDomain(CkMigrateMessage* M) {}
+
+    SWRDomain(int K_, int overlap_, int nt_, double dt_,
+			  int gny_, double dy_, int gnx_, double dx_,
+			  int GNx_, int GNy_);
+
+	// Setup the test problem
+	void build_x0_expected();
+
+	~SWRDomain();
+
+};
+
+

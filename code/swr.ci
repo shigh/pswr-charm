@@ -24,6 +24,7 @@ mainmodule SWRCharm
 
 		entry void set_boundary(int iter, boundary_t bndy, std::vector<double> vec);
 
+		// Complete simulation logic
 		entry void run_simulation(int n_iter)
 		{
 
@@ -31,9 +32,10 @@ mainmodule SWRCharm
 			{
 				serial
 				{
-
+					// Do solves
 					region->time_step_chunk();
 
+					// Communicate
 					if(comm_west)
 						domainProxy(west,thisIndex.y).set_boundary(iteration, EAST,
 																   region->get_boundary(WEST, 0));
@@ -48,6 +50,7 @@ mainmodule SWRCharm
 																	region->get_boundary(SOUTH, 0));
 				}
 
+				// Recieve boundarys
 				for(recv=0; recv<n_recv; recv++)
 				{
 					when set_boundary[iteration](int iter, boundary_t bndy, std::vector<double> vec)
@@ -57,6 +60,8 @@ mainmodule SWRCharm
 					}
 				}
 
+				// Error checks
+				// TODO: This is a terrible way to handle error calcs
 				serial
 				{
 					int error = 0;
@@ -72,6 +77,7 @@ mainmodule SWRCharm
 						  << thisIndex.y << ' ' << err << endl;
 				}				
 
+				// If there is another iteration, reset region
 				serial
 				{
 					if(iteration<n_iter-1)
@@ -79,6 +85,7 @@ mainmodule SWRCharm
 				}
 			}
 
+			// Phone home
 			serial
 			{
 				mainProxy.callback();
