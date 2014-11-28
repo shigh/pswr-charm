@@ -1,2 +1,8 @@
 nul
 testsuite
+
+# Charm files
+*.decl.h
+*.def.h
+charmrun
+swr

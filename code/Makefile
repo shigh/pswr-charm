@@ -25,6 +25,19 @@ $(OBJS): %.o: %.cpp $(DEPS)
 $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
+CHARMC = ~/src/charm/net-linux-x86_64/bin/charmc $(OPTS)
+TESTOPTS = ++local
+
+COBJS = swr.o
+
+swr: $(COBJS)
+	$(CHARMC) -O3 -language charm++ -o swr $(COBJS)
+
+SWRCharm.decl.h: pswr.ci
+	$(CHARMC)  pswr.ci
+
+swr.o: swr.cpp SWRCharm.decl.h
+	$(CHARMC) -c swr.cpp
 
 clean:
 	rm -vf nul *.o *.a

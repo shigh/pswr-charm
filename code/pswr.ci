@@ -1,27 +1,20 @@
-mainmodule pswr {
-  include "pswr.h";
-  readonly CProxy_Main mainProxy;
+mainmodule SWRCharm
+{
 
-  mainchare Main {
-    entry Main(CkArgMsg* m);
-  };
+	include "swr.hpp";
+	readonly CProxy_Main mainProxy;
 
-  array [2D] Cell {
-    entry Cell(void);
+	mainchare Main
+	{
+		entry Main(CkArgMsg* m);
 
-    entry void run() {
-      while(err < tol) {
-	atomic {
-	  solve(x, y, dt);
-	  for (i = 0; i < nNeighbors; i++) {
-	    neighbors[i].transmit(y, thisIndex);
-	  }
-	}
-	for (i = 0; i < nNeighbors; i++) {
-	  when transmit(y, ind){
-	    updateBoundary(y);
-	  }
-	}	
-    };
-  };
+	};
+
+	array [2D] SWRDomain
+	{
+
+		entry SWRDomain(void);
+
+	};
 };
+
