@@ -34,12 +34,11 @@ void interpolate(int nt1, int nx1, vector<double>& vec1, int nt2, int nx2, vecto
       q12 = vec2.at(nx2 * t2 + x1);
       
       q22 = vec2.at(nx2 * t2 + x2);
-      
       vec1.at(x + nx1 * t) = 
-	q11 * ((x1 + 1) - xloc) * ((t1 + 1) - tloc) 
-	+ q21 * (xloc - x1) * ((t1 + 1) - tloc)
-	+ q12 * ((x1 + 1) - xloc) * (tloc - t1)
-	+ q12 * (xloc - x1) * (tloc - t1);
+		  q11 * ((x1 + 1) - xloc) * ((t1 + 1) - tloc) 
+		  + q21 * (xloc - x1) * ((t1 + 1) - tloc)
+		  + q12 * ((x1 + 1) - xloc) * (tloc - t1)
+		  + q22 * (xloc - x1) * (tloc - t1);
     }
   }
 }
