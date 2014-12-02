@@ -7,8 +7,8 @@ LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc
 TLDLIBS += -lboost_unit_test_framework
 
 DEPS  = region.hpp solver.hpp utils.hpp
-OBJS  = region.o utils.o solver.o
-TOBJS = testsuite.o test_utils.o test_solver.o test_region.o
+OBJS  = region.o utils.o solver.o interpolator.o
+TOBJS = testsuite.o test_utils.o test_solver.o test_region.o test_interpolator.o
 COBJS = swr.o
 
 all: $(OBJS)
