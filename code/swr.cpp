@@ -43,7 +43,6 @@ void Main::done()
 		CkExit();
 }
 
-
 SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 					 int gny_, double dy_, int gnx_, double dx_,
 					 int GNx_, int GNy_):
@@ -141,6 +140,7 @@ SWRDomain::~SWRDomain()
 }
 
 void SWRDomain::pup(PUP::er& p){
+
 	p | *region;
 	p | nt; p | gny; p | gnx;
 	p | dt; p | dy; p | dx;

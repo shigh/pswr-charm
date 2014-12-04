@@ -63,10 +63,8 @@ private:
 
 public:
 
-	SWRDomain(CkMigrateMessage* M) {
-		std::cout << "migrating!" << endl;
-	}
-	void pup(PUP::er& p);
+        SWRDomain(CkMigrateMessage* m) {}
+	void pup(PUP::er& p);       
 	SWRDomain(int K_, int overlap_, int nt_, double dt_,
 			  int gny_, double dy_, int gnx_, double dx_,
 			  int GNx_, int GNy_);
