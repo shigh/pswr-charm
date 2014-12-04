@@ -4,25 +4,27 @@
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
-			   std::vector<double> x0_, std::shared_ptr<Solver> solver_):
+			   std::vector<double> x0_, std::shared_ptr<Solver> solver_, int nt_max_):
 	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_),
-	x0(x0_), solver(solver_)
+	x0(x0_), solver(solver_), nt_max(nt_max_)
 {
-
+	
+	int array_nt = std::max(nt_max, nt);
 	dt_vals = std::vector<double>(K,     0);
-	west    = std::vector<double>(ny*nt, 0);
-	east    = std::vector<double>(ny*nt, 0);
-	north   = std::vector<double>(nx*nt, 0);
-	south   = std::vector<double>(nx*nt, 0);
+	west    = std::vector<double>(ny*array_nt, 0);
+	east    = std::vector<double>(ny*array_nt, 0);
+	north   = std::vector<double>(nx*array_nt, 0);
+	south   = std::vector<double>(nx*array_nt, 0);
 	west_const = east_const = north_const = south_const = false;
 
 	// Setup chunk logic
 	// TODO Handle case where nt not a multiple of K
 	int cs = (int)nt/K; // chunk size
+	int start_mult = nt_max>0?nt_max:cs;
 	chunk_start = std::vector<int>(K, 0);
 	chunk_size  = std::vector<int>(K, cs);
 	for(int i=0; i<K; i++)
-		chunk_start[i] = cs*i;
+		chunk_start[i] = start_mult*i;
 	chunk_size[K-1] = nt-cs*(K-1);
 
 	// Set the time t==0 boundary array values to
