@@ -9,7 +9,7 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	x0(x0_), solver(solver_), nt_max(nt_max_)
 {
 	
-	int array_nt = std::max(nt_max, nt);
+	int array_nt = std::max(nt_max*K, nt);
 	dt_vals = std::vector<double>(K,     0);
 	west    = std::vector<double>(ny*array_nt, 0);
 	east    = std::vector<double>(ny*array_nt, 0);

@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 	// (The first N values will be whatever is in x0)
 	auto x0 = std::vector<double>(N*N, 1.);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
-	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
+	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
 	for(int i=0; i<K; i++)
 		region.set_dt(i+1, i);
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( region_get_set_boundary )
 
 	auto x0 = std::vector<double>(N*N, 1);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
-	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
+	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
 	auto set = std::vector<double>(region.get_chunk_size(1)*N, 1);
 	region.set_boundary(EAST, &set[0], 1);
