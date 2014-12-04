@@ -82,6 +82,7 @@ public:
 	/*! Set dt for chunk NT
 	 */
 	void set_dt(double dt, int N);
+	void set_dt(int nt, double dt, int N);
 
 	/*! dt at chunk N
 	 */

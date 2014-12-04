@@ -120,7 +120,13 @@ void Region::time_step_chunk()
 
 void Region::set_dt(double dt, int N)
 {
-	dt_vals[N] = dt;
+	set_dt(chunk_size[N], dt, N);
+}
+
+void Region::set_dt(int nt, double dt, int N)
+{
+	dt_vals[N]    = dt;
+	chunk_size[N] = nt;
 	if(N==curr_chunk)
 		solver->set_dt(dt_vals[curr_chunk]);
 }
