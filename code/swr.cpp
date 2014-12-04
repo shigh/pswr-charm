@@ -4,6 +4,10 @@
 /*readonly*/ CProxy_Main mainProxy;
 /*readonly*/ CProxy_SWRDomain domainProxy;
 
+void init_node()
+{
+	PetscInitializeNoArguments();
+}
 
 Main::Main(CkArgMsg* m)
 {
@@ -50,8 +54,6 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	K(K_), overlap(overlap_), nt(nt_), dt(dt_), gny(gny_), dy(dy_), gnx(gnx_), dx(dx_),
 	GNx(GNx_), GNy(GNy_)
 {
-
-	PetscInitializeNoArguments();
 
 	// Find this domains location in the global grid
 	auto start = std::vector<int>(GNx, 0);
@@ -137,7 +139,6 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 SWRDomain::~SWRDomain()
 {
-	PetscFinalize();
 }
 
 void SWRDomain::build_x0_expected()

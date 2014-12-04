@@ -6,7 +6,9 @@ mainmodule SWRCharm
 	include "utils.hpp";
 	readonly CProxy_Main mainProxy;
 	readonly CProxy_SWRDomain domainProxy;
-	
+
+	initnode void init_node();
+
 	mainchare Main
 	{
 		entry Main(CkArgMsg* m);
