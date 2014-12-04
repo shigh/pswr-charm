@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <iostream>
 #include "pup_stl.h"
 #include "region.hpp"
 #include "solver.hpp"
@@ -62,9 +63,11 @@ private:
 
 public:
 
-	SWRDomain(CkMigrateMessage* M) {}
-
-    SWRDomain(int K_, int overlap_, int nt_, double dt_,
+	SWRDomain(CkMigrateMessage* M) {
+		std::cout << "migrating!" << endl;
+	}
+	void pup(PUP::er& p);
+	SWRDomain(int K_, int overlap_, int nt_, double dt_,
 			  int gny_, double dy_, int gnx_, double dx_,
 			  int GNx_, int GNy_);
 

@@ -12,6 +12,7 @@
 #include <petscmat.h>
 #include <petscvec.h>
 #include <petscksp.h>
+#include "pup.h"
 #pragma once
 
 #include "utils.hpp"
@@ -27,7 +28,7 @@
 // the data layout.  I am not sure yet what the best signature for the
 // solve functions is, if you build it using these we should be able
 // to modifify it relatively easily to do what we want.
-class Solver
+class Solver: public PUP::able
 {
 
 protected:
@@ -37,7 +38,7 @@ protected:
 	double 	dt;
 
 public:
-
+	Solver(CkMigrateMessage* msg) {}
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
 
@@ -57,12 +58,14 @@ public:
 
 	double get_dt();
 
+	virtual void pup(PUP::er &p);
+
 };
 
 
 class HeatSolverBTCS: public Solver
 {
-
+	PUPable_decl(HeatSolverBTCS);
 private:
 
 	Vec rhs;	// right hand side
@@ -75,7 +78,7 @@ private:
 public:
 
 	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
-
+	HeatSolverBTCS(CkMigrateMessage* msg) : Solver(msg) {}
 	void solve(std::vector<double>& x);
 
 	void set_rhs(const std::vector<double>& b,
@@ -83,7 +86,7 @@ public:
 				 double* north, double* south);
 
 	void set_dt(double dt_);
-
+	virtual void pup(PUP::er &p);
 	~HeatSolverBTCS();
 	
 };
@@ -92,11 +95,12 @@ public:
 // Sets x to dt in solve
 class DummySolver: public Solver
 {
-
+PUPable_decl(DummySolver);
 public:
 
 	DummySolver(int ny_, double dy_, int nx_, double dx_);
-
+	DummySolver(CkMigrateMessage* msg) : Solver(msg) {}
+	
 	void solve(std::vector<double>& x);
 
 	void set_rhs(const std::vector<double>& b,

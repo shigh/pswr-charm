@@ -1,9 +1,9 @@
 
-CXX = g++
+CXX = $(CHARMC)
 CXXFLAGS = -g --std=c++11
 
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
-LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc
+LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc -module CommonLBs
 TLDLIBS += -lboost_unit_test_framework
 
 DEPS  = region.hpp solver.hpp utils.hpp interpolator.hpp
