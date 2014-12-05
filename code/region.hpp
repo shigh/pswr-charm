@@ -51,6 +51,7 @@ private:
 
 	std::vector<double>& get_boundary_vector(boundary_t bndy);
 
+
 	// ---These functions are usefull for indexing into the bndy arrays
 	// Total number of elements in a chunk
 	int get_chunk_n_elems(boundary_t bndy, int N);
@@ -69,7 +70,7 @@ public:
 
 	Region(int K_, int overlap_, int nt_, int ny_, double dy_, int nx_, double dx_,
 		   std::vector<double> x0, std::shared_ptr<Solver> solver);
-
+	void pup(PUP::er &p);
 
 	/*! Advance each step in chunk N
 	 */

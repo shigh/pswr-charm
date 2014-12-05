@@ -2,10 +2,40 @@
 #include "solver.hpp"
 #include <iostream>
 
+void operator| (PUP::er& p, Vec& v) {
+  PetscInt sz;
+  if (!p.isUnpacking()) {
+    VecGetSize(v, &sz);
+  }
+  p | sz;
+  if(p.isUnpacking()) {    
+    VecCreate(PETSC_COMM_WORLD, &v);
+    for (int i = 0; i < sz; i++) {
+      PetscScalar d;
+      p | d;
+      VecSetValue(v, i, d, INSERT_VALUES);
+    }
+    VecAssemblyBegin(v);
+    VecAssemblyEnd(v);
+  }
+  else {
+    for (int i = 0; i < sz; i++) {
+      PetscScalar d;
+      VecGetValues(v, 1, &i, &d);
+      p | d;
+    }
+  }
+}
+
 
 double Solver::get_dt()
 {
 	return dt;
+}
+
+void Solver::pup(PUP::er &p) 
+{
+  p|nx; p|ny; p|dy; p|dx; p|dt;
 }
 
 void HeatSolverBTCS::set_dt(double dt_)
@@ -102,6 +132,23 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 		VecSetValues(rhs, 1, &j, &val, INSERT_VALUES);
 	}
 
+}
+
+void HeatSolverBTCS::pup(PUP::er &p) 
+{
+  Solver::pup(p);  
+  p|rhs; p|temp;
+  if (p.isUnpacking()) {
+    //unpack A
+    two_d_heat_BTCS(A, dt, ny, dy, nx, dx, false);
+    KSPCreate(PETSC_COMM_WORLD, &ksp);
+    KSPSetOperators(ksp, A, A);
+    KSPGetPC(ksp, &pc);
+    PCSetType(pc, PCLU);
+    KSPSetFromOptions(ksp);
+  } else {
+    //pack A
+  }
 }
 
 void DummySolver::set_dt(double dt_)

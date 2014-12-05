@@ -1,6 +1,7 @@
 
 #include "region.hpp"
 #include "solver.hpp"
+#include "pup_stl.h"
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
@@ -70,6 +71,34 @@ void Region::time_step()
 		solver->set_dt(dt_vals[curr_chunk]);
 	}
 	
+}
+
+void Region::pup(PUP::er &p) {
+  p | (*solver);
+  p | dt_vals;
+  p | chunk_start;
+  p | chunk_size;
+  p | x0;
+  p | x;
+  p | west;
+  p | east;
+  p | north;
+  p | south;
+  p | west_const;
+  p | east_const;
+  p | north_const;
+  p | south_const;
+  p | K;
+  p | curr_chunk;
+  p | curr_chunk_ind;
+  p | curr_ind;
+  p | nt;
+  p | ny;
+  p | nx;
+  p | dy;
+  p | dx;
+  p | overlap;
+    
 }
 
 void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind)
