@@ -13,6 +13,7 @@
 #include "../utils.hpp"
 #include "../solver.hpp"
 #include "../region.hpp"
+#include "../interpolator.hpp"
 
 
 BOOST_AUTO_TEST_SUITE( region_tests )
@@ -31,7 +32,7 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 	// (The first N values will be whatever is in x0)
 	auto x0 = std::vector<double>(N*N, 1.);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
-	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
+	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
 	for(int i=0; i<K; i++)
 		region.set_dt(i+1, i);
@@ -102,7 +103,7 @@ BOOST_AUTO_TEST_CASE( region_get_set_boundary )
 
 	auto x0 = std::vector<double>(N*N, 1);
 	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
-	Region region = Region(K, 0, nt, N, d, N, d, x0, solver);
+	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
 	auto set = std::vector<double>(region.get_chunk_size(1)*N, 1);
 	region.set_boundary(EAST, &set[0], 1);
@@ -386,4 +387,161 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 	BOOST_CHECK_LT( errorne, tol );
 
 }
+
+BOOST_AUTO_TEST_CASE( region_diff_dt )
+{
+	// Using a general solution of the form:
+	// u(x, y, t) = sin(kx)sin(ky)exp(-2k^2 t)
+	// on a square domain
+	//
+	// This is a full SWR test
+	// 4 subdomains, 2 in each dimension.
+	// This checks that everything works together.
+	// This should give you a good idea how the charm
+	// implementation will work
+
+	double tol = 0.01; // Good enough for government work...
+
+	int N = 100;
+	int K = 2;
+	int overlap = 20;
+	int nt = 10;
+	int ind;
+	double dx, dt, L, k;
+	double xj, yi;
+
+	L  = 2*M_PI;
+	k  = 1.;
+	dt = .01;
+	dx = L/((double)(N-1));
+
+	auto start = std::vector<int>(2, 0);
+	auto end   = std::vector<int>(2, 0);
+	partition_domain(start, end, N, 2, overlap);
+
+	// Full domain
+	auto x0       = std::vector<double>(N*N, 0);
+	auto expected = std::vector<double>(N*N, 0);
+	for(int i=0; i<N; i++)
+		for(int j=0; j<N; j++)
+		{
+			ind = j + i*N;
+			xj = j*dx;
+			yi = i*dx;
+			x0[ind]       = sin(k*xj)*sin(k*yi);
+			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
+		}
+	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(N, dx, N, dx);
+	Region region = Region(1, 0, nt, N, dx, N, dx, x0, solver);
+
+	// Build the four domains
+	// West
+	const int nxw = end[0]-start[0];
+	const int nyw = N;
+	auto x0w       = std::vector<double>(nyw*nxw, 0);
+	auto expectedw = std::vector<double>(nyw*nxw, 0);
+	for(int i=0; i<nyw; i++)
+		for(int j=0; j<nxw; j++)
+		{
+			ind = j + i*nxw;
+			xj = j*dx;
+			yi = i*dx;
+			x0w[ind]       = sin(k*xj)*sin(k*yi);
+			expectedw[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
+		}
+	std::shared_ptr<Solver> solverw = std::make_shared<HeatSolverBTCS>(nyw, dx, nxw, dx);
+	Region regionw = Region(K, overlap, nt, nyw, dx, nxw, dx, x0w, solverw, nt);
+	regionw.hold_constant(WEST|SOUTH|NORTH);
+
+	// East
+	const int nxe = end[1]-start[1];
+	const int nye = N;
+	auto x0e       = std::vector<double>(nye*nxe, 0);
+	auto expectede = std::vector<double>(nye*nxe, 0);
+	for(int i=0; i<nye; i++)
+		for(int j=0; j<nxe; j++)
+		{
+			ind = j + i*nxe;
+			xj = (j+start[1])*dx;
+			yi = i*dx;
+			x0e[ind]       = sin(k*xj)*sin(k*yi);
+			expectede[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
+		}
+	std::shared_ptr<Solver> solvere = std::make_shared<HeatSolverBTCS>(nye, dx, nxe, dx);
+	Region regione = Region(K, overlap, nt, nye, dx, nxe, dx, x0e, solvere, nt);
+	regione.hold_constant(EAST|SOUTH|NORTH);
+
+	// Solve whole domain expected
+	region.set_dt(dt, 0);
+	region.time_step_chunk();
+	auto x = region.get_x();
+	
+	// Iterate over 4 domains
+	regionw.set_dt(dt, 0);
+	regionw.set_dt(regionw.get_nt(1)*2, dt/2., 1);
+
+	regione.set_dt(regione.get_nt(0)*2, dt/2., 0);
+	regione.set_dt(dt, 1);
+
+	double error, errorw, errore;
+	std::vector<double> send1, send2;
+	std::vector<double> xw, xe, tmp;
+	for(int i=0; i<5; i++)
+	{
+		// Time step
+		for(int j=0; j<K; j++)
+		{
+			regionw.time_step_chunk();
+			regione.time_step_chunk();
+		}
+	
+		// Exchange boundarys
+		for(int j=0; j<K; j++)
+		{
+			send1 = regionw.get_boundary(EAST, j);
+			send2 = regione.get_boundary(WEST, j);
+
+			tmp = std::vector<double>(send2.size(), 0);
+			interpolate(regione.get_nt(j), regione.get_boundary_size(EAST), tmp,
+						regionw.get_nt(j), regionw.get_boundary_size(WEST), send1);
+			regione.set_boundary(WEST, &tmp[0], j);
+
+			tmp = std::vector<double>(send1.size(), 0);
+			interpolate(regionw.get_nt(j), regionw.get_boundary_size(WEST), tmp,
+						regione.get_nt(j), regione.get_boundary_size(EAST), send2);
+			regionw.set_boundary(EAST, &tmp[0], j);
+			
+		}
+	
+		// Check error
+		// I left these in the loop just in case I
+		// need to come back and debug again
+		xw = regionw.get_x();
+		xe = regione.get_x();
+	
+		errorw = 0.;
+		errore = 0.;
+	
+		for(int i=0; i<nyw*nxw; i++)
+			errorw = std::max(errorw, std::abs(expectedw[i] - xw[i]));
+		for(int i=0; i<nye*nxe; i++)
+			errore = std::max(errore, std::abs(expectede[i] - xe[i]));
+	
+		// Reset for next iteration
+		regionw.reset();
+		regione.reset();
+	
+ 	}
+
+	error = 0.;
+	for(int i=0; i<N*N; i++)
+		error = std::max(error, std::abs(expected[i] - x[i]));
+
+	BOOST_CHECK_LT( error,   tol );
+	BOOST_CHECK_LT( errorw,  tol );
+	BOOST_CHECK_LT( errore,  tol );
+	
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

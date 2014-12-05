@@ -41,7 +41,7 @@ private:
 	int curr_chunk, curr_chunk_ind, curr_ind;
 
 	// Model params
-	int nt, ny, nx;
+	int nt, nt_max, ny, nx;
 	double dy, dx;
 
 	// Overlap logic
@@ -69,7 +69,7 @@ private:
 public:
 	Region() { }
 	Region(int K_, int overlap_, int nt_, int ny_, double dy_, int nx_, double dx_,
-		   std::vector<double> x0, std::shared_ptr<Solver> solver);
+		   std::vector<double> x0, std::shared_ptr<Solver> solver, int nt_max=-1);
 
 #ifdef __CHARMC__
 	void pup(PUP::er &p);
@@ -86,14 +86,23 @@ public:
 	/*! Set dt for chunk NT
 	 */
 	void set_dt(double dt, int N);
+	void set_dt(int nt, double dt, int N);
 
 	/*! dt at chunk N
 	 */
 	double get_dt(int N);
 
+	/*! nt int chunk N
+	 */
+	int get_nt(int N);
+
 	/*! Number of steps in chunk N
 	 */
-	double get_chunk_size(int N);
+	int get_chunk_size(int N);
+
+	/*! The length of a boundary
+	 */
+	int get_boundary_size(boundary_t bndy);
 
 	/*! Set boundary chunk N
 	 */
