@@ -1,7 +1,9 @@
 
 #include "region.hpp"
 #include "solver.hpp"
-#include "pup_stl.h"
+#ifdef __CHARMC__
+  #include "pup_stl.h"
+#endif
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
@@ -73,7 +75,9 @@ void Region::time_step()
 	
 }
 
-void Region::pup(PUP::er &p) {
+#ifdef __CHARMC__
+void Region::pup(PUP::er &p)
+{
   p | (*solver);
   p | dt_vals;
   p | chunk_start;
@@ -100,6 +104,7 @@ void Region::pup(PUP::er &p) {
   p | overlap;
     
 }
+#endif
 
 void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind)
 {

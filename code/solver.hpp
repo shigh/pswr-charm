@@ -8,13 +8,15 @@
 /* indent-tabs-mode: t */
 /* End: */
 
+#pragma once
+
 #include <vector>
 #include <petscmat.h>
 #include <petscvec.h>
 #include <petscksp.h>
-#include "pup.h"
-#pragma once
-
+#ifdef __CHARMC__
+  #include "pup.h"
+#endif
 #include "utils.hpp"
 
 /*
@@ -28,7 +30,11 @@
 // the data layout.  I am not sure yet what the best signature for the
 // solve functions is, if you build it using these we should be able
 // to modifify it relatively easily to do what we want.
+#ifdef __CHARMC__
 class Solver: public PUP::able
+#else
+class Solver
+#endif
 {
 
 protected:
@@ -38,9 +44,15 @@ protected:
 	double 	dt;
 
 public:
-	Solver(CkMigrateMessage* msg) {}
+
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
+
+#ifdef __CHARMC__
+	Solver(CkMigrateMessage* msg) {}
+
+	virtual void pup(PUP::er &p);
+#endif
 
 	virtual ~Solver() {};
 
@@ -58,15 +70,17 @@ public:
 
 	double get_dt();
 
-	virtual void pup(PUP::er &p);
-
 };
 
 
 class HeatSolverBTCS: public Solver
 {
-	PUPable_decl(HeatSolverBTCS);
+
 private:
+
+#ifdef __CHARMC__
+	PUPable_decl(HeatSolverBTCS);
+#endif
 
 	Vec rhs;	// right hand side
 	Vec temp;	// PETSc Vec to contain result before copying to c++ vector
@@ -78,7 +92,13 @@ private:
 public:
 
 	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
+
+#ifdef __CHARMC__
 	HeatSolverBTCS(CkMigrateMessage* msg) : Solver(msg) {}
+
+	virtual void pup(PUP::er &p);
+#endif
+
 	void solve(std::vector<double>& x);
 
 	void set_rhs(const std::vector<double>& b,
@@ -86,7 +106,7 @@ public:
 				 double* north, double* south);
 
 	void set_dt(double dt_);
-	virtual void pup(PUP::er &p);
+
 	~HeatSolverBTCS();
 	
 };
@@ -95,11 +115,20 @@ public:
 // Sets x to dt in solve
 class DummySolver: public Solver
 {
-PUPable_decl(DummySolver);
+
+private:
+
+#ifdef __CHARMC__
+	PUPable_decl(DummySolver);
+#endif
+
 public:
 
 	DummySolver(int ny_, double dy_, int nx_, double dx_);
+
+#ifdef __CHARMC__
 	DummySolver(CkMigrateMessage* msg) : Solver(msg) {}
+#endif
 	
 	void solve(std::vector<double>& x);
 

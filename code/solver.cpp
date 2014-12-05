@@ -2,6 +2,7 @@
 #include "solver.hpp"
 #include <iostream>
 
+#ifdef __CHARMC__
 void operator| (PUP::er& p, Vec& v) {
   PetscInt sz;
   if (!p.isUnpacking()) {
@@ -26,6 +27,7 @@ void operator| (PUP::er& p, Vec& v) {
     }
   }
 }
+#endif
 
 
 double Solver::get_dt()
@@ -33,10 +35,12 @@ double Solver::get_dt()
 	return dt;
 }
 
+#ifdef __CHARMC__
 void Solver::pup(PUP::er &p) 
 {
   p|nx; p|ny; p|dy; p|dx; p|dt;
 }
+#endif
 
 void HeatSolverBTCS::set_dt(double dt_)
 {
@@ -134,6 +138,7 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 
 }
 
+#ifdef __CHARMC__
 void HeatSolverBTCS::pup(PUP::er &p) 
 {
   Solver::pup(p);  
@@ -150,6 +155,7 @@ void HeatSolverBTCS::pup(PUP::er &p)
     //pack A
   }
 }
+#endif
 
 void DummySolver::set_dt(double dt_)
 {

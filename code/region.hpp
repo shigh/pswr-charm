@@ -70,7 +70,10 @@ public:
 
 	Region(int K_, int overlap_, int nt_, int ny_, double dy_, int nx_, double dx_,
 		   std::vector<double> x0, std::shared_ptr<Solver> solver);
+
+#ifdef __CHARMC__
 	void pup(PUP::er &p);
+#endif
 
 	/*! Advance each step in chunk N
 	 */
