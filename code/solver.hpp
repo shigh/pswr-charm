@@ -38,7 +38,9 @@ protected:
 	double 	dt;
 
 public:
-	Solver(CkMigrateMessage* msg) {}
+	PUPable_decl(Solver);
+	Solver() {}
+	Solver(CkMigrateMessage* msg) : PUP::able(msg) {}
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
 
@@ -46,15 +48,15 @@ public:
 
 	/*! Solve for x in Ax=b
 	 */
-	virtual void solve(std::vector<double>& x) = 0;
+	virtual void solve(std::vector<double>& x) {};
 
 	// It would probablly be better to do this with iterators. We can
 	// look into that later.
 	virtual void set_rhs(const std::vector<double>& b,
 						 double* west, double* east,
-						 double* north, double* south) = 0;
+						 double* north, double* south) {};
 
-	virtual void set_dt(double dt_) = 0;
+	virtual void set_dt(double dt_) {};
 
 	double get_dt();
 
@@ -65,7 +67,7 @@ public:
 
 class HeatSolverBTCS: public Solver
 {
-	PUPable_decl(HeatSolverBTCS);
+
 private:
 
 	Vec rhs;	// right hand side
@@ -76,7 +78,8 @@ private:
 	KSPConvergedReason reason;
 
 public:
-
+	PUPable_decl(HeatSolverBTCS);
+	HeatSolverBTCS() {}
 	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
 	HeatSolverBTCS(CkMigrateMessage* msg) : Solver(msg) {}
 	void solve(std::vector<double>& x);
@@ -95,9 +98,9 @@ public:
 // Sets x to dt in solve
 class DummySolver: public Solver
 {
-PUPable_decl(DummySolver);
 public:
-
+	PUPable_decl(DummySolver);
+	DummySolver() {}
 	DummySolver(int ny_, double dy_, int nx_, double dx_);
 	DummySolver(CkMigrateMessage* msg) : Solver(msg) {}
 	

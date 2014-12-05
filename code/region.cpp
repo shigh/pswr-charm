@@ -73,8 +73,8 @@ void Region::time_step()
 	
 }
 
-void Region::pup(PUP::er &p) {
-  p | (*solver);
+void Region::pup(PUP::er &p) {   
+
   p | dt_vals;
   p | chunk_start;
   p | chunk_size;
@@ -93,12 +93,21 @@ void Region::pup(PUP::er &p) {
   p | curr_chunk_ind;
   p | curr_ind;
   p | nt;
-  p | ny;
   p | nx;
+  p | ny;
   p | dy;
   p | dx;
   p | overlap;
-    
+  
+  if (p.isUnpacking()) {
+	  Solver* slv;
+	  p | slv;
+	  solver.reset(slv);
+  }
+  else {
+	  Solver* slv = &(*solver);
+	  p | slv;
+  }
 }
 
 void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind)

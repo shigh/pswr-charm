@@ -142,7 +142,6 @@ SWRDomain::~SWRDomain()
 
 void SWRDomain::pup(PUP::er& p){
 
-	p | *region;
 	p | nt; p | gny; p | gnx;
 	p | dt; p | dy; p | dx;
 	p | ny; p | nx; p | overlap;
@@ -153,6 +152,14 @@ void SWRDomain::pup(PUP::er& p){
 	p | xstart; p | xend; p | ystart; p | yend;
 	p | x0; p | expected;
 	p | iteration; p | n_recv; p | recv;
+	if (p.isUnpacking()) {
+		region = std::make_shared<Region>();
+		p | (*region);
+	}
+	else {
+		p | *region;
+	}
+
 }
 
 void SWRDomain::build_x0_expected()

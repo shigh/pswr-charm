@@ -10,7 +10,7 @@
 
 mainmodule SWRCharm
 {
-
+	PUPable Solver;
 	PUPable HeatSolverBTCS;
 	PUPable DummySolver;
 	include "swr.hpp";

@@ -9,21 +9,24 @@ void operator| (PUP::er& p, Vec& v) {
   }
   p | sz;
   if(p.isUnpacking()) {    
-    VecCreate(PETSC_COMM_WORLD, &v);
-    for (int i = 0; i < sz; i++) {
-      PetscScalar d;
-      p | d;
-      VecSetValue(v, i, d, INSERT_VALUES);
-    }
-    VecAssemblyBegin(v);
-    VecAssemblyEnd(v);
+	  VecCreateSeq(PETSC_COMM_WORLD, sz,  &v);
+	  VecSetFromOptions(v);
+	  VecGetSize(v, &sz);
+
+	  for (int i = 0; i < sz; i++) {
+		  PetscScalar d;
+		  p | d;
+		  VecSetValue(v, i, d, INSERT_VALUES);
+	  }
+	  VecAssemblyBegin(v);
+	  VecAssemblyEnd(v);
   }
   else {
-    for (int i = 0; i < sz; i++) {
-      PetscScalar d;
-      VecGetValues(v, 1, &i, &d);
-      p | d;
-    }
+	  for (int i = 0; i < sz; i++) {
+		  PetscScalar d;
+		  VecGetValues(v, 1, &i, &d);
+		  p | d;
+	  }
   }
 }
 
@@ -35,7 +38,8 @@ double Solver::get_dt()
 
 void Solver::pup(PUP::er &p) 
 {
-  p|nx; p|ny; p|dy; p|dx; p|dt;
+	PUP::able::pup(p);
+	p|nx; p|ny; p|dy; p|dx; p|dt;
 }
 
 void HeatSolverBTCS::set_dt(double dt_)
@@ -97,7 +101,8 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 	// with the south border proceeding from west to east
 	PetscScalar val;
 	int j;
-
+	PetscInt sz;
+	VecGetSize(rhs, &sz);
 	// Set the south boundary values.
 	for (int i = 0; i < nx; i++)
 	{
@@ -140,7 +145,7 @@ void HeatSolverBTCS::pup(PUP::er &p)
   p|rhs; p|temp;
   if (p.isUnpacking()) {
     //unpack A
-    two_d_heat_BTCS(A, dt, ny, dy, nx, dx, false);
+    two_d_heat_BTCS(A, dt, ny, dy, nx, dx, true);
     KSPCreate(PETSC_COMM_WORLD, &ksp);
     KSPSetOperators(ksp, A, A);
     KSPGetPC(ksp, &pc);

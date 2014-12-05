@@ -67,7 +67,7 @@ private:
 	void time_step();
 
 public:
-
+	Region() { }
 	Region(int K_, int overlap_, int nt_, int ny_, double dy_, int nx_, double dx_,
 		   std::vector<double> x0, std::shared_ptr<Solver> solver);
 	void pup(PUP::er &p);
