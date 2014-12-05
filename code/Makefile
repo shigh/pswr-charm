@@ -3,6 +3,7 @@ CXX = $(CHARMC)
 CXXFLAGS = -g --std=c++11
 
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
+INC     += -I ${PETSC_DIR}/include/mpiuni
 LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc -module CommonLBs
 TLDLIBS += -lboost_unit_test_framework
 
