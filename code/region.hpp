@@ -88,9 +88,13 @@ public:
 	 */
 	double get_dt(int N);
 
+	/*! nt int chunk N
+	 */
+	int get_nt(int N);
+
 	/*! Number of steps in chunk N
 	 */
-	double get_chunk_size(int N);
+	int get_chunk_size(int N);
 
 	/*! Set boundary chunk N
 	 */

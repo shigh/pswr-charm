@@ -138,7 +138,12 @@ double Region::get_dt(int N)
 	return dt_vals[N];
 }
 
-double Region::get_chunk_size(int N)
+int Region::get_nt(int N)
+{
+	return get_chunk_size(N);
+}
+
+int Region::get_chunk_size(int N)
 {
 	return chunk_size[N];
 }
