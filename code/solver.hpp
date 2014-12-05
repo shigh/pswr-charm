@@ -46,15 +46,13 @@ protected:
 public:
 
 	Solver() {}
-#ifdef __CHARMC__
-	Solver(CkMigrateMessage* msg) : PUP::able(msg) {}
-#endif
+
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
 
 #ifdef __CHARMC__
 	PUPable_decl(Solver);
-	Solver(CkMigrateMessage* msg) {}
+	Solver(CkMigrateMessage* msg) : PUP::able(msg) {}
 
 	virtual void pup(PUP::er &p);
 #endif
