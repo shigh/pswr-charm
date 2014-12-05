@@ -100,6 +100,7 @@ void Region::pup(PUP::er &p)
   p | curr_chunk_ind;
   p | curr_ind;
   p | nt;
+  p | nt_max;
   p | nx;
   p | ny;
   p | dy;
