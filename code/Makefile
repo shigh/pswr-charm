@@ -40,6 +40,9 @@ SWRCharm.decl.h: swr.ci
 swr.o: swr.cpp SWRCharm.decl.h
 	$(CHARMC) $(CXXFLAGS) $(INC) -c swr.cpp
 
+tags:
+	etags *.cpp tests/*.cpp
+
 clean:
 	rm -vf nul *.o *.a tests/*.o
 	rm -rf tests/testsuite swr charmrun
