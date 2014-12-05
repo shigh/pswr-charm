@@ -46,8 +46,9 @@ protected:
 public:
 
 	Solver() {}
+#ifdef __CHARMC__
 	Solver(CkMigrateMessage* msg) : PUP::able(msg) {}
-
+#endif
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
 
@@ -91,7 +92,6 @@ private:
 	KSPConvergedReason reason;
 
 public:
-	PUPable_decl(HeatSolverBTCS);
 	HeatSolverBTCS() {}
 	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
 
@@ -123,7 +123,7 @@ private:
 
 public:
 
-	PUPable_decl(DummySolver);
+
 	DummySolver() {}
 	DummySolver(int ny_, double dy_, int nx_, double dx_);
 
