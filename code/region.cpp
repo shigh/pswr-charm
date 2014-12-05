@@ -148,6 +148,17 @@ int Region::get_chunk_size(int N)
 	return chunk_size[N];
 }
 
+int Region::get_boundary_size(boundary_t bndy)
+{
+
+	if(bndy==NORTH || bndy==SOUTH)
+		return nx;
+	else if(bndy==WEST || bndy==EAST)
+		return ny;
+	assert(0);
+	
+}
+
 std::vector<double>& Region::get_boundary_vector(boundary_t bndy)
 {
 

@@ -96,6 +96,10 @@ public:
 	 */
 	int get_chunk_size(int N);
 
+	/*! The length of a boundary
+	 */
+	int get_boundary_size(boundary_t bndy);
+
 	/*! Set boundary chunk N
 	 */
 	void set_boundary(boundary_t bndy, const double* vals, int N);
