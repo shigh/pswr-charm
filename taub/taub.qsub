@@ -13,11 +13,6 @@ echo "Running pswr-charm swr taub test from $(pwd)"
 CHARMRUN=../code/charmrun
 SWR=../code/swr
 . ../setup.sh
-./gennodelist.sh > nodelist
 
-mpirun -n 4 ./a.out
-
-#${CHARMRUN} ++nodelist nodelist ${SWR} +p4 3 2 10 5 +balancer GreedyCommLB
 ${CHARMRUN} ++mpiexec ${SWR} +p8 3 2 10 5 +balancer GreedyCommLB
-#${CHARMRUN} ++local ${SWR} +p4 3 2 10 5 +balancer GreedyCommLB
 
