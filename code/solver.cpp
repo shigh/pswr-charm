@@ -2,11 +2,49 @@
 #include "solver.hpp"
 #include <iostream>
 
+#ifdef __CHARMC__
+void operator| (PUP::er& p, Vec& v) {
+  PetscInt sz;
+  if (!p.isUnpacking()) {
+    VecGetSize(v, &sz);
+  }
+  p | sz;
+  if(p.isUnpacking()) {    
+	  VecCreateSeq(PETSC_COMM_WORLD, sz,  &v);
+	  VecSetFromOptions(v);
+	  VecGetSize(v, &sz);
+
+	  for (int i = 0; i < sz; i++) {
+		  PetscScalar d;
+		  p | d;
+		  VecSetValue(v, i, d, INSERT_VALUES);
+	  }
+	  VecAssemblyBegin(v);
+	  VecAssemblyEnd(v);
+  }
+  else {
+	  for (int i = 0; i < sz; i++) {
+		  PetscScalar d;
+		  VecGetValues(v, 1, &i, &d);
+		  p | d;
+	  }
+  }
+}
+#endif
+
 
 double Solver::get_dt()
 {
 	return dt;
 }
+
+#ifdef __CHARMC__
+void Solver::pup(PUP::er &p) 
+{
+	PUP::able::pup(p);
+	p|nx; p|ny; p|dy; p|dx; p|dt;
+}
+#endif
 
 void HeatSolverBTCS::set_dt(double dt_)
 {
@@ -67,7 +105,8 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 	// with the south border proceeding from west to east
 	PetscScalar val;
 	int j;
-
+	PetscInt sz;
+	VecGetSize(rhs, &sz);
 	// Set the south boundary values.
 	for (int i = 0; i < nx; i++)
 	{
@@ -103,6 +142,25 @@ void HeatSolverBTCS::set_rhs(const std::vector<double>& b,
 	}
 
 }
+
+#ifdef __CHARMC__
+void HeatSolverBTCS::pup(PUP::er &p) 
+{
+  Solver::pup(p);  
+  p|rhs; p|temp;
+  if (p.isUnpacking()) {
+    //unpack A
+    two_d_heat_BTCS(A, dt, ny, dy, nx, dx, true);
+    KSPCreate(PETSC_COMM_WORLD, &ksp);
+    KSPSetOperators(ksp, A, A);
+    KSPGetPC(ksp, &pc);
+    PCSetType(pc, PCLU);
+    KSPSetFromOptions(ksp);
+  } else {
+    //pack A
+  }
+}
+#endif
 
 void DummySolver::set_dt(double dt_)
 {

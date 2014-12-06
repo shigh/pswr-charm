@@ -6,3 +6,7 @@ testsuite
 *.def.h
 charmrun
 swr
+
+# Emacs Junk
+*~
+TAGS

@@ -1,12 +1,26 @@
+/* Local Variables: */
+/* c-set-offset: 'substatement-open 0 */
+/* c++-tab-always-indent: t */
+/* c-basic-offset: 4 */
+/* c-indent-level: 4 */
+/* tab-stop-list: '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60)) */
+/* tab-width: 4 */
+/* indent-tabs-mode: t */
+/* End: */
 
 mainmodule SWRCharm
 {
-
+	PUPable Solver;
+	PUPable HeatSolverBTCS;
+	PUPable DummySolver;
 	include "swr.hpp";
 	include "utils.hpp";
 	readonly CProxy_Main mainProxy;
 	readonly CProxy_SWRDomain domainProxy;
-	
+
+	initnode void init_node();
+
+
 	mainchare Main
 	{
 		entry Main(CkArgMsg* m);
@@ -15,87 +29,95 @@ mainmodule SWRCharm
 		entry void done();
 
 	};
+	
+	
 
 	array [2D] SWRDomain
 	{
-
+		
 		entry SWRDomain(int K, int overlap_, int nt, double dt,
 						int gny, double dy, int gnx, double dx,
-						int GNx, int GNy);
-
+						int GNx, int GNy, int n_iter, int lb_freq);
+		
 		entry void set_boundary(int iter, boundary_t bndy, std::vector<double> vec);
-
+		
 		// Complete simulation logic
-		entry void run_simulation(int n_iter)
+		entry void run_simulation()
 		{
-
-			for(iteration=0; iteration<n_iter; iteration++)
-			{
-				serial
-				{
-					// Do solves
-					region->time_step_chunk();
-
-					// Communicate
-					if(comm_west)
-						domainProxy(west,thisIndex.y).set_boundary(iteration, EAST,
-																   region->get_boundary(WEST, 0));
-					if(comm_east)
-						domainProxy(east,thisIndex.y).set_boundary(iteration, WEST,
-																   region->get_boundary(EAST, 0));
-					if(comm_north)
-						domainProxy(thisIndex.x,north).set_boundary(iteration, SOUTH,
-																	region->get_boundary(NORTH, 0));
-					if(comm_south)
-						domainProxy(thisIndex.x,south).set_boundary(iteration, NORTH,
-																	region->get_boundary(SOUTH, 0));
-				}
-
-				// Recieve boundarys
-				for(recv=0; recv<n_recv; recv++)
-				{
-					when set_boundary[iteration](int iter, boundary_t bndy, std::vector<double> vec)
-						serial
-					{
-						region->set_boundary(bndy, &vec[0], 0);
-					}
-				}
-
-				// Error checks
-				// TODO: This is a terrible way to handle error calcs
-				serial
-				{
-					int error = 0;
-					auto x = region->get_x();
-
-					double err = 0;
-					for(int i=0; i<x.size(); i++)
-					{
-						err = std::max(err, std::abs(x[i]-expected[i]));
-					}
-
-					ckout << iteration << ' ' << thisIndex.x << ' '
-						  << thisIndex.y << ' ' << err << endl;
-				}				
-
-				// If there is another iteration, reset region
-				serial
-				{
-					if(iteration<n_iter-1)
-						region->reset();
-				}
-			}
-
-			// Phone home
-			serial
-			{
-				mainProxy.done();
-			}
+			serial {
+				iteration = 0;
+				run_iter();
+			}		   
 			
 		};
+		entry void run_iter() {
+			serial
+			{
+				// Do solves
+				region->time_step_chunk();
+				
+				// Communicate
+				if(comm_west)
+					domainProxy(west,thisIndex.y).set_boundary(iteration, EAST,
+															   region->get_boundary(WEST, 0));
+				if(comm_east)
+					domainProxy(east,thisIndex.y).set_boundary(iteration, WEST,
+															   region->get_boundary(EAST, 0));
+				if(comm_north)
+					domainProxy(thisIndex.x,north).set_boundary(iteration, SOUTH,
+																region->get_boundary(NORTH, 0));
+				if(comm_south)
+					domainProxy(thisIndex.x,south).set_boundary(iteration, NORTH,
+																region->get_boundary(SOUTH, 0));
+			}
 
+			// Recieve boundarys
+			for(recv=0; recv<n_recv; recv++)
+			{
+				when set_boundary[iteration](int iter, boundary_t bndy, std::vector<double> vec) serial
+				{
+					region->set_boundary(bndy, &vec[0], 0);
+				}
+			}
 
+			// Error checks
+			// TODO: This is a terrible way to handle error calcs
+			serial
+			{
+				int error = 0;
+				auto x = region->get_x();
+				
+				double err = 0;
+				for(int i=0; i<x.size(); i++)
+				{
+					err = std::max(err, std::abs(x[i]-expected[i]));
+				}
+
+				ckout << iteration << ' ' << thisIndex.x << ' '
+					  << thisIndex.y << ' ' << err << endl;
+			}				
+
+				// If there is another iteration, reset region
+			serial
+			{
+				if(iteration<n_iter-1)
+					region->reset();
+				else  {
+					ckout << "done at " << iteration << "/" << n_iter <<  " iterations" << endl;
+					mainProxy.done();
+				}
+			}
+			serial {
+				iteration++;
+				if (iteration % lb_freq == 0) 
+					AtSync();
+				else 
+					run_iter();
+			}
+		};
+		
 	};
 
 };
+
 

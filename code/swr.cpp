@@ -4,15 +4,21 @@
 /*readonly*/ CProxy_Main mainProxy;
 /*readonly*/ CProxy_SWRDomain domainProxy;
 
+void init_node()
+{
+	PetscInitializeNoArguments();
+}
+
 
 Main::Main(CkArgMsg* m)
 {
 
-	if(m->argc < 4) CkAbort("Expects 3 args: N domains (each dimension), L, n_iter");
+	if(m->argc < 5) CkAbort("Expects 4 args: N domains (each dimension), L, n_iter, lb_freq");
 
 	N      = atoi(m->argv[1]);
 	Lpi    = atoi(m->argv[2]);
 	n_iter = atoi(m->argv[3]);
+	lb_freq = atoi(m->argv[4]);
 	delete m;
 
 	mainProxy = thisProxy;
@@ -32,8 +38,8 @@ Main::Main(CkArgMsg* m)
 	dt = .01;
 	dx = L/((double)(nx-1));
 
-	domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, N, N);
-	domainProxy.run_simulation(n_iter);
+	domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, n_iter, lb_freq, N,  N);
+	domainProxy.run_simulation();
 
 }
 
@@ -43,15 +49,13 @@ void Main::done()
 		CkExit();
 }
 
-
 SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 					 int gny_, double dy_, int gnx_, double dx_,
-					 int GNx_, int GNy_):
+					 int GNx_, int GNy_, int n_iter_, int lb_freq_):
 	K(K_), overlap(overlap_), nt(nt_), dt(dt_), gny(gny_), dy(dy_), gnx(gnx_), dx(dx_),
-	GNx(GNx_), GNy(GNy_)
+	GNx(GNx_), GNy(GNy_), n_iter(n_iter_), lb_freq(lb_freq_)
 {
-
-	PetscInitializeNoArguments();
+	usesAtSync = true;
 
 	// Find this domains location in the global grid
 	auto start = std::vector<int>(GNx, 0);
@@ -137,7 +141,32 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 SWRDomain::~SWRDomain()
 {
-	PetscFinalize();
+}
+void SWRDomain::ResumeFromSync() {
+	run_iter();
+}
+void SWRDomain::pup(PUP::er& p){
+	CBase_SWRDomain::pup(p);
+	p | nt; p | gny; p | gnx;
+	p | dt; p | dy; p | dx;
+	p | ny; p | nx; p | overlap;
+	p | GNx; p | GNy;
+	p | K;
+	p | west; p | east; p | north; p | south;
+	p | comm_west; p | comm_east; p | comm_north; p | comm_south;
+	p | xstart; p | xend; p | ystart; p | yend;
+	p | x0; p | expected;
+	p | iteration; p | n_recv; p | recv;
+	p | n_iter; p | lb_freq;
+	if (p.isUnpacking()) {
+		region = std::make_shared<Region>();
+		p | (*region);
+		region -> reset();
+	}
+	else {
+		p | *region;
+	}
+
 }
 
 void SWRDomain::build_x0_expected()

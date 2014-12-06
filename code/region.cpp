@@ -1,28 +1,34 @@
 
 #include "region.hpp"
 #include "solver.hpp"
+#include <iostream>
+#ifdef __CHARMC__
+  #include "pup_stl.h"
+#endif
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
-			   std::vector<double> x0_, std::shared_ptr<Solver> solver_):
+			   std::vector<double> x0_, std::shared_ptr<Solver> solver_, int nt_max_):
 	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_),
-	x0(x0_), solver(solver_)
+	x0(x0_), solver(solver_), nt_max(nt_max_)
 {
-
+	
+	int array_nt = std::max(nt_max*K, nt);
 	dt_vals = std::vector<double>(K,     0);
-	west    = std::vector<double>(ny*nt, 0);
-	east    = std::vector<double>(ny*nt, 0);
-	north   = std::vector<double>(nx*nt, 0);
-	south   = std::vector<double>(nx*nt, 0);
+	west    = std::vector<double>(ny*array_nt, 0);
+	east    = std::vector<double>(ny*array_nt, 0);
+	north   = std::vector<double>(nx*array_nt, 0);
+	south   = std::vector<double>(nx*array_nt, 0);
 	west_const = east_const = north_const = south_const = false;
 
 	// Setup chunk logic
 	// TODO Handle case where nt not a multiple of K
 	int cs = (int)nt/K; // chunk size
+	int start_mult = nt_max>0?nt_max:cs;
 	chunk_start = std::vector<int>(K, 0);
 	chunk_size  = std::vector<int>(K, cs);
 	for(int i=0; i<K; i++)
-		chunk_start[i] = cs*i;
+		chunk_start[i] = start_mult*i;
 	chunk_size[K-1] = nt-cs*(K-1);
 
 	// Set the time t==0 boundary array values to
@@ -53,6 +59,7 @@ void Region::time_step()
 	double* peast  = &east[get_curr_start_index(EAST)];
 	double* pnorth = &north[get_curr_start_index(NORTH)];
 	double* psouth = &south[get_curr_start_index(SOUTH)];
+   
 
 	solver->set_rhs(x, pwest, peast, pnorth, psouth);
 
@@ -62,7 +69,7 @@ void Region::time_step()
 
 	++curr_chunk_ind;
 	++curr_ind;
-	if(curr_chunk_ind == chunk_size[curr_chunk])
+	if(curr_chunk_ind == chunk_size[curr_chunk] && curr_chunk < chunk_start.size() - 1)
 	{
 		++curr_chunk;
 		curr_chunk_ind = 0;
@@ -71,6 +78,48 @@ void Region::time_step()
 	}
 	
 }
+
+
+#ifdef __CHARMC__
+void Region::pup(PUP::er &p)
+{
+
+  p | dt_vals;
+  p | chunk_start;
+  p | chunk_size;
+  p | x0;
+  p | x;
+  p | west;
+  p | east;
+  p | north;
+  p | south;
+  p | west_const;
+  p | east_const;
+  p | north_const;
+  p | south_const;
+  p | K;
+  p | curr_chunk;
+  p | curr_chunk_ind;
+  p | curr_ind;
+  p | nt;
+  p | nt_max;
+  p | nx;
+  p | ny;
+  p | dy;
+  p | dx;
+  p | overlap;
+  
+  if (p.isUnpacking()) {
+	  Solver* slv;
+	  p | slv;
+	  solver.reset(slv);
+  }
+  else {
+	  Solver* slv = &(*solver);
+	  p | slv;
+  }
+}
+#endif
 
 void Region::update_boundary_arrays(const std::vector<double>& vec, int chunk, int chunk_ind)
 {
@@ -120,7 +169,13 @@ void Region::time_step_chunk()
 
 void Region::set_dt(double dt, int N)
 {
-	dt_vals[N] = dt;
+	set_dt(chunk_size[N], dt, N);
+}
+
+void Region::set_dt(int nt, double dt, int N)
+{
+	dt_vals[N]    = dt;
+	chunk_size[N] = nt;
 	if(N==curr_chunk)
 		solver->set_dt(dt_vals[curr_chunk]);
 }
@@ -130,9 +185,25 @@ double Region::get_dt(int N)
 	return dt_vals[N];
 }
 
-double Region::get_chunk_size(int N)
+int Region::get_nt(int N)
+{
+	return get_chunk_size(N);
+}
+
+int Region::get_chunk_size(int N)
 {
 	return chunk_size[N];
+}
+
+int Region::get_boundary_size(boundary_t bndy)
+{
+
+	if(bndy==NORTH || bndy==SOUTH)
+		return nx;
+	else if(bndy==WEST || bndy==EAST)
+		return ny;
+	assert(0);
+	
 }
 
 std::vector<double>& Region::get_boundary_vector(boundary_t bndy)

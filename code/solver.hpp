@@ -8,12 +8,15 @@
 /* indent-tabs-mode: t */
 /* End: */
 
+#pragma once
+
 #include <vector>
 #include <petscmat.h>
 #include <petscvec.h>
 #include <petscksp.h>
-#pragma once
-
+#ifdef __CHARMC__
+  #include "pup.h"
+#endif
 #include "utils.hpp"
 
 /*
@@ -27,7 +30,11 @@
 // the data layout.  I am not sure yet what the best signature for the
 // solve functions is, if you build it using these we should be able
 // to modifify it relatively easily to do what we want.
+#ifdef __CHARMC__
+class Solver: public PUP::able
+#else
 class Solver
+#endif
 {
 
 protected:
@@ -38,22 +45,31 @@ protected:
 
 public:
 
+	Solver() {}
+
 	Solver(int ny_, double dy_, int nx_, double dx_):
 		ny(ny_), dy(dy_), nx(nx_), dx(dx_) {};
+
+#ifdef __CHARMC__
+	PUPable_decl(Solver);
+	Solver(CkMigrateMessage* msg) : PUP::able(msg) {}
+
+	virtual void pup(PUP::er &p);
+#endif
 
 	virtual ~Solver() {};
 
 	/*! Solve for x in Ax=b
 	 */
-	virtual void solve(std::vector<double>& x) = 0;
+	virtual void solve(std::vector<double>& x) {};
 
 	// It would probablly be better to do this with iterators. We can
 	// look into that later.
 	virtual void set_rhs(const std::vector<double>& b,
 						 double* west, double* east,
-						 double* north, double* south) = 0;
+						 double* north, double* south) {};
 
-	virtual void set_dt(double dt_) = 0;
+	virtual void set_dt(double dt_) {};
 
 	double get_dt();
 
@@ -65,6 +81,7 @@ class HeatSolverBTCS: public Solver
 
 private:
 
+
 	Vec rhs;	// right hand side
 	Vec temp;	// PETSc Vec to contain result before copying to c++ vector
 	Mat A;
@@ -73,8 +90,15 @@ private:
 	KSPConvergedReason reason;
 
 public:
-
+	HeatSolverBTCS() {}
 	HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_);
+
+#ifdef __CHARMC__
+	PUPable_decl(HeatSolverBTCS);
+	HeatSolverBTCS(CkMigrateMessage* msg) : Solver(msg) {}
+
+	virtual void pup(PUP::er &p);
+#endif
 
 	void solve(std::vector<double>& x);
 
@@ -93,10 +117,19 @@ public:
 class DummySolver: public Solver
 {
 
+private:
+
 public:
 
+
+	DummySolver() {}
 	DummySolver(int ny_, double dy_, int nx_, double dx_);
 
+#ifdef __CHARMC__
+	PUPable_decl(DummySolver);
+	DummySolver(CkMigrateMessage* msg) : Solver(msg) {}
+#endif
+	
 	void solve(std::vector<double>& x);
 
 	void set_rhs(const std::vector<double>& b,
