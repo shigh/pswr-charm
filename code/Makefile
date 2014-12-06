@@ -1,6 +1,6 @@
 
 CXX = $(CHARMC)
-CXXFLAGS = -g --std=c++11
+CXXFLAGS = -g
 
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
 INC     += -I ${PETSC_DIR}/include/mpiuni

@@ -85,7 +85,7 @@ mainmodule SWRCharm
 			serial
 			{
 				int error = 0;
-				auto x = region->get_x();
+				std::vector<double> x = region->get_x();
 				
 				double err = 0;
 				for(int i=0; i<x.size(); i++)

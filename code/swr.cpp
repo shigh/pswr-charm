@@ -58,8 +58,8 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	usesAtSync = true;
 
 	// Find this domains location in the global grid
-	auto start = std::vector<int>(GNx, 0);
-	auto end   = std::vector<int>(GNx, 0);
+	std::vector<int> start(GNx, 0);
+	std::vector<int> end(GNx, 0);
 
 	partition_domain(start, end, gnx, GNx, overlap);
 	xstart = start[thisIndex.x];
