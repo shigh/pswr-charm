@@ -5,7 +5,7 @@ CXXFLAGS = -g --std=c++11
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
 INC     += -I ${PETSC_DIR}/include/mpiuni
 LDLIBS  += -L${PETSC_DIR}/${PETSC_ARCH}/lib -lpetsc
-CLDLIBS += #-module CommonLBs
+CLDLIBS += -module CommonLBs
 TLDLIBS += -lboost_unit_test_framework
 
 DEPS  = region.hpp solver.hpp utils.hpp interpolator.hpp
@@ -26,7 +26,7 @@ $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 test-swr: swr
-	./charmrun ++local +p4 ./swr 3 2 10 5 #+balancer GreedyCommLB
+	./charmrun ++local +p4 ./swr 3 2 10 5 +balancer GreedyCommLB
 
 swr: $(COBJS) $(OBJS)
 	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS) $(CLDLIBS)

@@ -112,7 +112,7 @@ void Region::pup(PUP::er &p)
   if (p.isUnpacking()) {
 	  Solver* slv;
 	  p | slv;
-	  //solver.reset(slv);
+	  solver = slv;
   }
   else {
 	  Solver* slv = &(*solver);
