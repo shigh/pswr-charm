@@ -11,7 +11,7 @@
 #pragma once
 
 #include <vector>
-#include <memory>
+//#include <memory>
 #include "utils.hpp"
 #include "solver.hpp"
 
@@ -20,7 +20,8 @@ class Region
 
 private:
 
-	std::shared_ptr<Solver> solver;
+	//std::shared_ptr<Solver> solver;
+	Solver *solver;
 
 	// dt at each time step
 	std::vector<double> dt_vals;
@@ -69,7 +70,7 @@ private:
 public:
 	Region() { }
 	Region(int K_, int overlap_, int nt_, int ny_, double dy_, int nx_, double dx_,
-		   std::vector<double> x0, std::shared_ptr<Solver> solver, int nt_max=-1);
+		   std::vector<double> x0, Solver *solver, int nt_max=-1);
 
 #ifdef __CHARMC__
 	void pup(PUP::er &p);

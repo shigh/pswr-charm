@@ -34,7 +34,7 @@ private:
 
 	SWRDomain_SDAG_CODE
 
-	std::shared_ptr<Region> region;
+	Region *region;
 
 	// Global ny/ny/nx
 	int nt, gny, gnx, n_iter;

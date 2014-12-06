@@ -76,8 +76,8 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	build_x0_expected();
 
 	// Build data structures
-	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(ny, dy, nx, dx);
-	region = std::make_shared<Region>(K, overlap, nt, ny, dy, nx, dx, x0, solver);
+	Solver *solver = new HeatSolverBTCS(ny, dy, nx, dx);
+	region = new Region(K, overlap, nt, ny, dy, nx, dx, x0, solver);
 	region->set_dt(dt, 0);
 
 	// Setup boundary comm logic
@@ -159,7 +159,7 @@ void SWRDomain::pup(PUP::er& p){
 	p | iteration; p | n_recv; p | recv;
 	p | n_iter; p | lb_freq;
 	if (p.isUnpacking()) {
-		region = std::make_shared<Region>();
+		region = new Region();
 		p | (*region);
 		region -> reset();
 	}
