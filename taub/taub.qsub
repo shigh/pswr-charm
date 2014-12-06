@@ -1,0 +1,16 @@
+#!/bin/sh 
+#PBS -q cse
+#PBS -l nodes=1:ppn=4
+#PBS -N pswr_charm
+#PBS -j oe
+#PBS -l walltime=00:05:00
+
+cd $PBS_O_WORKDIR
+echo "Running pswr-charm swr taub test from $(pwd)"
+
+CHARMRUN=../code/charmrun
+SWR=../code/swr
+. ../setup.sh
+./gennodelist.sh > nodelist
+
+${CHARMRUN} ++nodelist nodelist ${SWR} +p4 3 2 10
