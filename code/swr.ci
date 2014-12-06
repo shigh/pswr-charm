@@ -103,7 +103,7 @@ mainmodule SWRCharm
 				if(iteration<n_iter-1)
 					region->reset();
 				else  {
-					std::cout << "done at " << iteration << "/" << n_iter <<  " iterations" << std::endl;
+					ckout << "done at " << iteration << "/" << n_iter <<  " iterations" << endl;
 					mainProxy.done();
 				}
 			}

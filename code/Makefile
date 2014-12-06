@@ -29,7 +29,7 @@ $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 test-swr: swr
-	./charmrun ++local +p4 ./swr 3 2 10
+	./charmrun ++local +p4 ./swr 3 2 10 5 +balancer GreedyCommLB
 
 swr: $(COBJS) $(OBJS)
 	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS) $(CLDLIBS)
