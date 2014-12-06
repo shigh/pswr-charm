@@ -1,6 +1,7 @@
 
 #include "region.hpp"
 #include "solver.hpp"
+#include <iostream>
 #ifdef __CHARMC__
   #include "pup_stl.h"
 #endif
@@ -58,6 +59,7 @@ void Region::time_step()
 	double* peast  = &east[get_curr_start_index(EAST)];
 	double* pnorth = &north[get_curr_start_index(NORTH)];
 	double* psouth = &south[get_curr_start_index(SOUTH)];
+   
 
 	solver->set_rhs(x, pwest, peast, pnorth, psouth);
 
@@ -67,7 +69,7 @@ void Region::time_step()
 
 	++curr_chunk_ind;
 	++curr_ind;
-	if(curr_chunk_ind == chunk_size[curr_chunk])
+	if(curr_chunk_ind == chunk_size[curr_chunk] && curr_chunk < chunk_start.size() - 1)
 	{
 		++curr_chunk;
 		curr_chunk_ind = 0;
