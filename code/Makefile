@@ -19,9 +19,6 @@ all: $(OBJS)
 test:
 	$(MAKE) -C tests test
 
-testsuite: $(TOBJS) $(OBJS)
-	$(CXX) -o $@ $^ $(LDLIBS) $(TLDLIBS)
-
 $(OBJS): %.o: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
