@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <cstddef>
 #include <vector>
@@ -35,9 +35,9 @@ BOOST_AUTO_TEST_CASE( heatbtcs_zero_boundary_convg )
 	HeatSolverBTCS solver = HeatSolverBTCS(N, dx, N, dx);
 	solver.set_dt(dt);
 
-	auto b        = std::vector<double>(N*N, 0);
-	auto x        = std::vector<double>(N*N, 0);
-	auto expected = std::vector<double>(N*N, 0);
+	std::vector<double> b(N*N, 0);
+	std::vector<double> x(N*N, 0);
+	std::vector<double> expected(N*N, 0);
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
 		{
@@ -48,10 +48,10 @@ BOOST_AUTO_TEST_CASE( heatbtcs_zero_boundary_convg )
 			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt);
 		}
 
-	auto west  = std::vector<double>(N, 0);
-	auto east  = std::vector<double>(N, 0);
-	auto north = std::vector<double>(N, 0);
-	auto south = std::vector<double>(N, 0);
+	std::vector<double> west(N, 0);
+	std::vector<double> east(N, 0);
+	std::vector<double> north(N, 0);
+	std::vector<double> south(N, 0);
 
 	solver.set_rhs(b, &west[0], &east[0], &north[0], &south[0]);
 	solver.solve(x);

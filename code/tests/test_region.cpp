@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <cstddef>
 #include <vector>
@@ -30,8 +30,8 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	// Set x0 to ones so the chunk 0 boundaries will all be one
 	// (The first N values will be whatever is in x0)
-	auto x0 = std::vector<double>(N*N, 1.);
-	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
+	std::vector<double> x0(N*N, 1.);
+	Solver *solver = new DummySolver(N, d, N, d);
 	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
 	for(int i=0; i<K; i++)
@@ -42,9 +42,9 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	for(int i=0; i<K; i++)
 	{
-		auto expected = std::vector<double>(region.get_chunk_size(i)*N, i+1);
+		std::vector<double> expected(region.get_chunk_size(i)*N, i+1);
 
-		auto bndy = region.get_boundary(EAST, i);
+		std::vector<double> bndy = region.get_boundary(EAST, i);
 		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
 
 		bndy = region.get_boundary(WEST, i);
@@ -69,14 +69,14 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	for(int i=0; i<K; i++)
 	{
-		auto expected = std::vector<double>(region.get_chunk_size(i)*N, i+K+1);
+		std::vector<double> expected(region.get_chunk_size(i)*N, i+K+1);
 		// x0 does not change, so chunk 0 will have its first N values still
 		// set to 1
 		if(i==0)
 			for(int j=0; j<N; j++)
 				expected[j] = 1;
 
-		auto bndy = region.get_boundary(EAST, i);
+		std::vector<double> bndy = region.get_boundary(EAST, i);
 		BOOST_CHECK(std::equal(expected.begin(), expected.end(), bndy.begin()));
 
 		bndy = region.get_boundary(WEST, i);
@@ -90,6 +90,7 @@ BOOST_AUTO_TEST_CASE( region_time_step )
 
 	}
 
+	delete solver;
 
 }
 
@@ -101,13 +102,13 @@ BOOST_AUTO_TEST_CASE( region_get_set_boundary )
 	int nt = 21;
 	double d = .1;
 
-	auto x0 = std::vector<double>(N*N, 1);
-	std::shared_ptr<Solver> solver = std::make_shared<DummySolver>(N, d, N, d);
+	std::vector<double> x0(N*N, 1);
+	Solver *solver = new DummySolver(N, d, N, d);
 	Region region = Region(K, 0, nt, N, d, N, d, x0, solver, nt);
 
-	auto set = std::vector<double>(region.get_chunk_size(1)*N, 1);
+	std::vector<double> set(region.get_chunk_size(1)*N, 1);
 	region.set_boundary(EAST, &set[0], 1);
-	auto get = region.get_boundary(EAST, 1);
+	std::vector<double> get = region.get_boundary(EAST, 1);
 	BOOST_CHECK(std::equal(get.begin(), get.end(), set.begin()));
 	BOOST_CHECK_EQUAL(get.size(), set.size());
 
@@ -128,6 +129,8 @@ BOOST_AUTO_TEST_CASE( region_get_set_boundary )
 	get = region.get_boundary(SOUTH, 4);
 	BOOST_CHECK(std::equal(get.begin(), get.end(), set.begin()));
 	BOOST_CHECK_EQUAL(get.size(), set.size());
+
+	delete solver;
 
 }
 
@@ -153,8 +156,8 @@ BOOST_AUTO_TEST_CASE( region_zero_boundary_convg )
 	dt = .01;
 	dx = L/((double)(N-1));
 	
-	auto x0       = std::vector<double>(N*N, 0);
-	auto expected = std::vector<double>(N*N, 0);
+	std::vector<double> x0(N*N, 0);
+	std::vector<double> expected(N*N, 0);
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
 		{
@@ -165,7 +168,7 @@ BOOST_AUTO_TEST_CASE( region_zero_boundary_convg )
 			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
 
-	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(N, dx, N, dx);
+	Solver *solver = new HeatSolverBTCS(N, dx, N, dx);
 	Region region = Region(K, 0, nt, N, dx, N, dx, x0, solver);
 
 	for(int i=0; i<K; i++)
@@ -174,13 +177,15 @@ BOOST_AUTO_TEST_CASE( region_zero_boundary_convg )
 	for(int i=0; i<K; i++)
 		region.time_step_chunk();
 
-	auto x = region.get_x();
+	std::vector<double> x = region.get_x();
 
 	double error = 0.;
 	for(int i=0; i<N*N; i++)
 		error = std::max(error, std::abs(expected[i] - x[i]));
 
 	BOOST_CHECK_LT( error, tol );
+
+	delete solver;
 
 }
 
@@ -211,13 +216,13 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 	dt = .01;
 	dx = L/((double)(N-1));
 
-	auto start = std::vector<int>(2, 0);
-	auto end   = std::vector<int>(2, 0);
+	std::vector<int> start(2, 0);
+	std::vector<int> end(2, 0);
 	partition_domain(start, end, N, 2, overlap);
 
 	// Full domain
-	auto x0       = std::vector<double>(N*N, 0);
-	auto expected = std::vector<double>(N*N, 0);
+	std::vector<double> x0(N*N, 0);
+	std::vector<double> expected(N*N, 0);
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
 		{
@@ -227,15 +232,15 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 			x0[ind]       = sin(k*xj)*sin(k*yi);
 			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(N, dx, N, dx);
+	Solver *solver = new HeatSolverBTCS(N, dx, N, dx);
 	Region region = Region(K, 0, nt, N, dx, N, dx, x0, solver);
 
 	// Build the four domains
 	// West
 	const int nxw = end[0]-start[0];
 	const int nyw = end[0]-start[0];
-	auto x0w       = std::vector<double>(nyw*nxw, 0);
-	auto expectedw = std::vector<double>(nyw*nxw, 0);
+	std::vector<double> x0w(nyw*nxw, 0);
+	std::vector<double> expectedw(nyw*nxw, 0);
 	for(int i=0; i<nyw; i++)
 		for(int j=0; j<nxw; j++)
 		{
@@ -245,15 +250,15 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 			x0w[ind]       = sin(k*xj)*sin(k*yi);
 			expectedw[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solverw = std::make_shared<HeatSolverBTCS>(nyw, dx, nxw, dx);
+	Solver *solverw = new HeatSolverBTCS(nyw, dx, nxw, dx);
 	Region regionw = Region(K, overlap, nt, nyw, dx, nxw, dx, x0w, solverw);
 	regionw.hold_constant(WEST|SOUTH);
 
 	// East
 	const int nxe = end[1]-start[1];
 	const int nye = end[0]-start[0];
-	auto x0e       = std::vector<double>(nye*nxe, 0);
-	auto expectede = std::vector<double>(nye*nxe, 0);
+	std::vector<double> x0e(nye*nxe, 0);
+	std::vector<double> expectede(nye*nxe, 0);
 	for(int i=0; i<nye; i++)
 		for(int j=0; j<nxe; j++)
 		{
@@ -263,15 +268,15 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 			x0e[ind]       = sin(k*xj)*sin(k*yi);
 			expectede[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solvere = std::make_shared<HeatSolverBTCS>(nye, dx, nxe, dx);
+	Solver *solvere = new HeatSolverBTCS(nye, dx, nxe, dx);
 	Region regione = Region(K, overlap, nt, nye, dx, nxe, dx, x0e, solvere);
 	regione.hold_constant(EAST|SOUTH);
 
 	// North west
 	const int nxnw = end[0]-start[0];
 	const int nynw = end[1]-start[1];
-	auto x0nw       = std::vector<double>(nxnw*nynw, 0);
-	auto expectednw = std::vector<double>(nxnw*nynw, 0);
+	std::vector<double> x0nw(nxnw*nynw, 0);
+	std::vector<double> expectednw(nxnw*nynw, 0);
 	for(int i=0; i<nynw; i++)
 		for(int j=0; j<nxnw; j++)
 		{
@@ -281,15 +286,15 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 			x0nw[ind]       = sin(k*xj)*sin(k*yi);
 			expectednw[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solvernw = std::make_shared<HeatSolverBTCS>(nynw, dx, nxnw, dx);
+	Solver *solvernw = new HeatSolverBTCS(nynw, dx, nxnw, dx);
 	Region regionnw = Region(K, overlap, nt, nynw, dx, nxnw, dx, x0nw, solvernw);
 	regionnw.hold_constant(WEST|NORTH);
 
 	// North east
 	const int nxne = end[1]-start[1];
 	const int nyne = end[1]-start[1];
-	auto x0ne       = std::vector<double>(nxne*nyne, 0);
-	auto expectedne = std::vector<double>(nxne*nyne, 0);
+	std::vector<double> x0ne(nxne*nyne, 0);
+	std::vector<double> expectedne(nxne*nyne, 0);
 	for(int i=0; i<nyne; i++)
 		for(int j=0; j<nxne; j++)
 		{
@@ -299,15 +304,14 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 			x0ne[ind]       = sin(k*xj)*sin(k*yi);
 			expectedne[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solverne = std::make_shared<HeatSolverBTCS>(nyne, dx, nxne, dx);
+	Solver *solverne = new HeatSolverBTCS(nyne, dx, nxne, dx);
 	Region regionne = Region(K, overlap, nt, nyne, dx, nxne, dx, x0ne, solverne);
 	regionne.hold_constant(EAST|NORTH);
-
 
 	// Solve whole domain expected
 	region.set_dt(dt, 0);
 	region.time_step_chunk();
-	auto x = region.get_x();
+	std::vector<double> x = region.get_x();
 	
 	// Iterate over 4 domains
 	regionw.set_dt(dt, 0);
@@ -386,6 +390,9 @@ BOOST_AUTO_TEST_CASE( region_four_domain_iteration )
 	BOOST_CHECK_LT( errornw, tol );
 	BOOST_CHECK_LT( errorne, tol );
 
+	delete solver, solvere, solverw;
+	delete solverne, solvernw;
+
 }
 
 BOOST_AUTO_TEST_CASE( region_diff_dt )
@@ -415,13 +422,13 @@ BOOST_AUTO_TEST_CASE( region_diff_dt )
 	dt = .01;
 	dx = L/((double)(N-1));
 
-	auto start = std::vector<int>(2, 0);
-	auto end   = std::vector<int>(2, 0);
+	std::vector<int> start(2, 0);
+	std::vector<int> end(2, 0);
 	partition_domain(start, end, N, 2, overlap);
 
 	// Full domain
-	auto x0       = std::vector<double>(N*N, 0);
-	auto expected = std::vector<double>(N*N, 0);
+	std::vector<double> x0(N*N, 0);
+	std::vector<double> expected(N*N, 0);
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
 		{
@@ -431,15 +438,15 @@ BOOST_AUTO_TEST_CASE( region_diff_dt )
 			x0[ind]       = sin(k*xj)*sin(k*yi);
 			expected[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(N, dx, N, dx);
+	Solver *solver = new HeatSolverBTCS(N, dx, N, dx);
 	Region region = Region(1, 0, nt, N, dx, N, dx, x0, solver);
 
 	// Build the four domains
 	// West
 	const int nxw = end[0]-start[0];
 	const int nyw = N;
-	auto x0w       = std::vector<double>(nyw*nxw, 0);
-	auto expectedw = std::vector<double>(nyw*nxw, 0);
+	std::vector<double> x0w(nyw*nxw, 0);
+	std::vector<double> expectedw(nyw*nxw, 0);
 	for(int i=0; i<nyw; i++)
 		for(int j=0; j<nxw; j++)
 		{
@@ -449,15 +456,15 @@ BOOST_AUTO_TEST_CASE( region_diff_dt )
 			x0w[ind]       = sin(k*xj)*sin(k*yi);
 			expectedw[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solverw = std::make_shared<HeatSolverBTCS>(nyw, dx, nxw, dx);
+	Solver *solverw = new HeatSolverBTCS(nyw, dx, nxw, dx);
 	Region regionw = Region(K, overlap, nt, nyw, dx, nxw, dx, x0w, solverw, nt);
 	regionw.hold_constant(WEST|SOUTH|NORTH);
 
 	// East
 	const int nxe = end[1]-start[1];
 	const int nye = N;
-	auto x0e       = std::vector<double>(nye*nxe, 0);
-	auto expectede = std::vector<double>(nye*nxe, 0);
+	std::vector<double> x0e(nye*nxe, 0);
+	std::vector<double> expectede(nye*nxe, 0);
 	for(int i=0; i<nye; i++)
 		for(int j=0; j<nxe; j++)
 		{
@@ -467,14 +474,14 @@ BOOST_AUTO_TEST_CASE( region_diff_dt )
 			x0e[ind]       = sin(k*xj)*sin(k*yi);
 			expectede[ind] = sin(k*xj)*sin(k*yi)*exp(-(2*k*k)*dt*(nt-1));
 		}
-	std::shared_ptr<Solver> solvere = std::make_shared<HeatSolverBTCS>(nye, dx, nxe, dx);
+	Solver *solvere = new HeatSolverBTCS(nye, dx, nxe, dx);
 	Region regione = Region(K, overlap, nt, nye, dx, nxe, dx, x0e, solvere, nt);
 	regione.hold_constant(EAST|SOUTH|NORTH);
 
 	// Solve whole domain expected
 	region.set_dt(dt, 0);
 	region.time_step_chunk();
-	auto x = region.get_x();
+	std::vector<double> x = region.get_x();
 	
 	// Iterate over 4 domains
 	regionw.set_dt(dt, 0);
@@ -540,8 +547,9 @@ BOOST_AUTO_TEST_CASE( region_diff_dt )
 	BOOST_CHECK_LT( error,   tol );
 	BOOST_CHECK_LT( errorw,  tol );
 	BOOST_CHECK_LT( errore,  tol );
-	
-}
 
+	delete solver, solverw, solvere;
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
