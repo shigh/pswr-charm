@@ -1,6 +1,6 @@
 #!/bin/sh 
 #PBS -q cse
-#PBS -l nodes=1:ppn=4
+#PBS -l nodes=2:ppn=4
 #PBS -N pswr_charm
 #PBS -j oe
 #PBS -l walltime=00:05:00
@@ -17,4 +17,7 @@ SWR=../code/swr
 
 mpirun -n 4 ./a.out
 
-${CHARMRUN} ++nodelist nodelist ${SWR} +p4 3 2 10 5 +balancer GreedyCommLB
+#${CHARMRUN} ++nodelist nodelist ${SWR} +p4 3 2 10 5 +balancer GreedyCommLB
+${CHARMRUN} ++mpiexec ${SWR} +p8 3 2 10 5 +balancer GreedyCommLB
+#${CHARMRUN} ++local ${SWR} +p4 3 2 10 5 +balancer GreedyCommLB
+
