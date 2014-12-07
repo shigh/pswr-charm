@@ -71,12 +71,18 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 	nx = xend-xstart;
 	ny = yend-ystart;
-	interp = std::vector<double>(nt*std::max(nx, ny), 0);
 
 	// Setup test problem
 	build_x0_expected();
 
 	// Build data structures
+	double scale = 1.;
+	if(thisIndex.x<std::floor(GNx/2))
+		scale = 2.;
+	nt = nt*scale;
+	dt = dt/scale;
+	interp = std::vector<double>(nt*std::max(nx, ny), 0);
+
 	Solver *solver = new HeatSolverBTCS(ny, dy, nx, dx);
 	region = new Region(K, overlap, nt, ny, dy, nx, dx, x0, solver);
 	region->set_dt(dt, 0);

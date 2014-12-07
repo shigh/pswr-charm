@@ -40,7 +40,7 @@ mainmodule SWRCharm
 						int gny, double dy, int gnx, double dx,
 						int GNx, int GNy, int n_iter, int lb_freq);
 		
-		entry void set_boundary(int iter, boundary_t bndy, int nt, int nx, std::vector<double> vec);
+		entry void set_boundary(int iter, boundary_t bndy, int nt2, int nx2, std::vector<double> vec);
 		
 		// Complete simulation logic
 		entry void run_simulation()
@@ -83,14 +83,14 @@ mainmodule SWRCharm
 			// Recieve boundarys
 			for(recv=0; recv<n_recv; recv++)
 			{
-				when set_boundary[iteration](int iter, boundary_t bndy, int nt, int nx,
+				when set_boundary[iteration](int iter, boundary_t bndy, int nt2, int nx2,
 											 std::vector<double> vec) serial
 				{
 					interpolate(region->get_nt(0),
 								region->get_boundary_size(bndy),
 								interp,
-								nt, nx, vec);
-					region->set_boundary(bndy, &vec[0], 0);
+								nt2, nx2, vec);
+					region->set_boundary(bndy, &interp[0], 0);
 				}
 			}
 
