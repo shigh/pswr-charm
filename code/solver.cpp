@@ -180,7 +180,7 @@ DummySolver::~DummySolver()
  */
 void DummySolver::solve(std::vector<double>& x)
 {
-	for(auto i=0; i<x.size(); i++)
+	for(int i=0; i<x.size(); i++)
 		x[i] = dt;
 }
 

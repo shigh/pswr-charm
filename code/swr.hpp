@@ -34,14 +34,15 @@ private:
 
 	SWRDomain_SDAG_CODE
 
-	std::shared_ptr<Region> region;
+	Region *region;
 
 	// Global ny/ny/nx
 	int nt, gny, gnx, n_iter;
 	double dt, dy, dx;
 	// Local ny/nx
 	int ny, nx, overlap;
-	
+	// Interpolation temporary
+	std::vector<double> interp;
 	// Number of domains
 	int GNx, GNy;
 	// K = number of chunks

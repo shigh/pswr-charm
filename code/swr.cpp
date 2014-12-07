@@ -58,8 +58,8 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	usesAtSync = true;
 
 	// Find this domains location in the global grid
-	auto start = std::vector<int>(GNx, 0);
-	auto end   = std::vector<int>(GNx, 0);
+	std::vector<int> start(GNx, 0);
+	std::vector<int> end(GNx, 0);
 
 	partition_domain(start, end, gnx, GNx, overlap);
 	xstart = start[thisIndex.x];
@@ -76,8 +76,15 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	build_x0_expected();
 
 	// Build data structures
-	std::shared_ptr<Solver> solver = std::make_shared<HeatSolverBTCS>(ny, dy, nx, dx);
-	region = std::make_shared<Region>(K, overlap, nt, ny, dy, nx, dx, x0, solver);
+	double scale = 1.;
+	if(thisIndex.x<std::floor(GNx/2))
+		scale = 2.;
+	nt = nt*scale;
+	dt = dt/scale;
+	interp = std::vector<double>(nt*std::max(nx, ny), 0);
+
+	Solver *solver = new HeatSolverBTCS(ny, dy, nx, dx);
+	region = new Region(K, overlap, nt, ny, dy, nx, dx, x0, solver);
 	region->set_dt(dt, 0);
 
 	// Setup boundary comm logic
@@ -159,9 +166,10 @@ void SWRDomain::pup(PUP::er& p){
 	p | iteration; p | n_recv; p | recv;
 	p | n_iter; p | lb_freq;
 	if (p.isUnpacking()) {
-		region = std::make_shared<Region>();
+		region = new Region();
 		p | (*region);
-		region -> reset();
+		region->reset();
+		interp = std::vector<double>(nt*std::max(nx, ny), 0);
 	}
 	else {
 		p | *region;

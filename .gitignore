@@ -32,3 +32,9 @@ setup.sh
 
 # Emacs Junk
 *~
+
+# Projections results
+*.log.gz
+*.projrc
+*.sts
+*.topo

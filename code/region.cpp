@@ -8,7 +8,7 @@
 
 Region::Region(int K_, int overlap_, int nt_, int ny_,
 			   double dy_, int nx_, double dx_,
-			   std::vector<double> x0_, std::shared_ptr<Solver> solver_, int nt_max_):
+			   std::vector<double> x0_, Solver* solver_, int nt_max_):
 	K(K_), overlap(overlap_), nt(nt_), ny(ny_), dy(dy_), nx(nx_), dx(dx_),
 	x0(x0_), solver(solver_), nt_max(nt_max_)
 {
@@ -112,7 +112,7 @@ void Region::pup(PUP::er &p)
   if (p.isUnpacking()) {
 	  Solver* slv;
 	  p | slv;
-	  solver.reset(slv);
+	  solver = slv;
   }
   else {
 	  Solver* slv = &(*solver);

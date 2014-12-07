@@ -1,6 +1,6 @@
 
 CXX = $(CHARMC)
-CXXFLAGS = -g --std=c++11
+CXXFLAGS = -g
 
 INC      = -I ${PETSC_DIR}/include -I ${PETSC_DIR}/${PETSC_ARCH}/include
 INC     += -I ${PETSC_DIR}/include/mpiuni
@@ -19,9 +19,6 @@ all: $(OBJS)
 test:
 	$(MAKE) -C tests test
 
-testsuite: $(TOBJS) $(OBJS)
-	$(CXX) -o $@ $^ $(LDLIBS) $(TLDLIBS)
-
 $(OBJS): %.o: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
@@ -29,10 +26,10 @@ $(TOBJS): %.o: tests/%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 test-swr: swr
-	./charmrun ++local +p4 ./swr 3 2 10 5 +balancer GreedyCommLB
+	./charmrun ++local +p4 ./swr 3 2 10 5 +balancer GreedyCommLB +LBDebug 3
 
 swr: $(COBJS) $(OBJS)
-	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS) $(CLDLIBS)
+	$(CHARMC) -O3 -language charm++ -o swr $^ $(LDLIBS) $(CLDLIBS) -tracemode projections
 
 SWRCharm.decl.h: swr.ci
 	$(CHARMC)  swr.ci
@@ -45,8 +42,10 @@ tags:
 
 clean:
 	rm -vf nul *.o *.a tests/*.o
-	rm -rf tests/testsuite swr charmrun
-	rm -rf *.decl.h *.def.h
+	rm -vf tests/testsuite swr charmrun
+	rm -vf *.decl.h *.def.h
+	rm -vf *.log.gz *.projrc *.sts *.topo
+	rm -vf ../taub/charmrun* ../taub/pswr_charm*
 
 # For emacs flymake mode
 check-syntax:
