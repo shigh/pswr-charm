@@ -23,6 +23,11 @@ Main::Main(CkArgMsg* m)
 
 	mainProxy = thisProxy;
 
+	// The last iteration to report its error
+	iter_err = 0;
+	// The last error reported
+	err = -1;
+
 	count = 0;
 	int nx = 100*N;
 	int ny = 100*N;
@@ -45,14 +50,19 @@ Main::Main(CkArgMsg* m)
 
 void Main::maxErrorReduction(double error)
 {
-	ckout << "Maximum Error: " << error << endl;
+	err = error;
+	ckout << "Iteration " << iter_err++ << ": " << error << endl;
 }
 
 void Main::done(int idx_x, int idx_y, int iteration)
 {
-	ckout << "Chare (" << idx_x << ", " << idx_y << ") done at " << iteration << "/" << n_iter <<  " iterations." << endl;
+
 	if(++count==N*N)
+	{
+		ckout << "Done at iteration " << iteration
+			  << " - Error: " << err << endl;
 		CkExit();
+	}
 }
 
 SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,

@@ -15,7 +15,8 @@ class Main: public CBase_Main
 {
 private:
 
-	int N, Lpi, n_iter, count, lb_freq;
+	int N, Lpi, n_iter, count, lb_freq, iter_err;
+	double err;
 
 public:
 
