@@ -29,7 +29,7 @@ mainmodule SWRCharm
 		entry[reductiontarget] void maxErrorReduction(double error);
 
 		// End of simulation callback
-		entry void done();
+		entry void done(int idx_x, int idx_y, int iteration);
 
 	};
 	
@@ -107,8 +107,6 @@ mainmodule SWRCharm
 				{
 					err = std::max(err, std::abs(x[i]-expected[i]));
 				}
-				//ckout << iteration << ' ' << thisIndex.x << ' '
-				//	  << thisIndex.y << ' ' << err << endl; 
 
 				CkCallback cb(CkReductionTarget(Main, maxErrorReduction), mainProxy);
 				contribute(sizeof(double), &err, CkReduction::max_double, cb);
@@ -120,8 +118,7 @@ mainmodule SWRCharm
 				if(iteration<n_iter-1)
 					region->reset();
 				else  {
-					ckout << "done at " << iteration << "/" << n_iter <<  " iterations" << endl;
-					mainProxy.done();
+					mainProxy.done(thisIndex.x, thisIndex.y, iteration);
 				}
 			}
 			serial {

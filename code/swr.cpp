@@ -48,8 +48,9 @@ void Main::maxErrorReduction(double error)
 	ckout << "Maximum Error: " << error << endl;
 }
 
-void Main::done()
+void Main::done(int idx_x, int idx_y, int iteration)
 {
+	ckout << "Chare (" << idx_x << ", " << idx_y << ") done at " << iteration << "/" << n_iter <<  " iterations." << endl;
 	if(++count==N*N)
 		CkExit();
 }

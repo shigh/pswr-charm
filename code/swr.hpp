@@ -24,7 +24,7 @@ public:
 	void maxErrorReduction(double error);
 
 	// Termination callback
-	void done();
+	void done(int idx_x, int idx_y, int iteration);
 
 };
 
