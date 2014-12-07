@@ -71,6 +71,7 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 	nx = xend-xstart;
 	ny = yend-ystart;
+	interp = std::vector<double>(nt*std::max(nx, ny), 0);
 
 	// Setup test problem
 	build_x0_expected();
@@ -161,7 +162,8 @@ void SWRDomain::pup(PUP::er& p){
 	if (p.isUnpacking()) {
 		region = new Region();
 		p | (*region);
-		region -> reset();
+		region->reset();
+		interp = std::vector<double>(nt*std::max(nx, ny), 0);
 	}
 	else {
 		p | *region;

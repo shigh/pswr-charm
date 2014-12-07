@@ -14,6 +14,7 @@ mainmodule SWRCharm
 	PUPable HeatSolverBTCS;
 	PUPable DummySolver;
 	include "swr.hpp";
+	include "interpolator.hpp";
 	include "utils.hpp";
 	readonly CProxy_Main mainProxy;
 	readonly CProxy_SWRDomain domainProxy;
@@ -39,7 +40,7 @@ mainmodule SWRCharm
 						int gny, double dy, int gnx, double dx,
 						int GNx, int GNy, int n_iter, int lb_freq);
 		
-		entry void set_boundary(int iter, boundary_t bndy, std::vector<double> vec);
+		entry void set_boundary(int iter, boundary_t bndy, int nt, int nx, std::vector<double> vec);
 		
 		// Complete simulation logic
 		entry void run_simulation()
@@ -59,23 +60,36 @@ mainmodule SWRCharm
 				// Communicate
 				if(comm_west)
 					domainProxy(west,thisIndex.y).set_boundary(iteration, EAST,
+															   region->get_nt(0),
+															   region->get_boundary_size(WEST),
 															   region->get_boundary(WEST, 0));
 				if(comm_east)
 					domainProxy(east,thisIndex.y).set_boundary(iteration, WEST,
+															   region->get_nt(0),
+															   region->get_boundary_size(EAST),
 															   region->get_boundary(EAST, 0));
 				if(comm_north)
 					domainProxy(thisIndex.x,north).set_boundary(iteration, SOUTH,
+																region->get_nt(0),
+																region->get_boundary_size(NORTH),
 																region->get_boundary(NORTH, 0));
 				if(comm_south)
 					domainProxy(thisIndex.x,south).set_boundary(iteration, NORTH,
+																region->get_nt(0),
+																region->get_boundary_size(SOUTH),
 																region->get_boundary(SOUTH, 0));
 			}
 
 			// Recieve boundarys
 			for(recv=0; recv<n_recv; recv++)
 			{
-				when set_boundary[iteration](int iter, boundary_t bndy, std::vector<double> vec) serial
+				when set_boundary[iteration](int iter, boundary_t bndy, int nt, int nx,
+											 std::vector<double> vec) serial
 				{
+					interpolate(region->get_nt(0),
+								region->get_boundary_size(bndy),
+								interp,
+								nt, nx, vec);
 					region->set_boundary(bndy, &vec[0], 0);
 				}
 			}

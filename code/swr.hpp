@@ -41,7 +41,8 @@ private:
 	double dt, dy, dx;
 	// Local ny/nx
 	int ny, nx, overlap;
-	
+	// Interpolation temporary
+	std::vector<double> interp;
 	// Number of domains
 	int GNx, GNy;
 	// K = number of chunks
