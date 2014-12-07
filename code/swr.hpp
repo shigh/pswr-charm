@@ -21,6 +21,8 @@ public:
 
     Main(CkArgMsg* m);
 
+	void maxErrorReduction(double error);
+
 	// Termination callback
 	void done();
 

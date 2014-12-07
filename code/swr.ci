@@ -26,6 +26,8 @@ mainmodule SWRCharm
 	{
 		entry Main(CkArgMsg* m);
 
+		entry[reductiontarget] void maxErrorReduction(double error);
+
 		// End of simulation callback
 		entry void done();
 
@@ -98,7 +100,6 @@ mainmodule SWRCharm
 			// TODO: This is a terrible way to handle error calcs
 			serial
 			{
-				int error = 0;
 				std::vector<double> x = region->get_x();
 				
 				double err = 0;
@@ -106,9 +107,11 @@ mainmodule SWRCharm
 				{
 					err = std::max(err, std::abs(x[i]-expected[i]));
 				}
+				//ckout << iteration << ' ' << thisIndex.x << ' '
+				//	  << thisIndex.y << ' ' << err << endl; 
 
-				ckout << iteration << ' ' << thisIndex.x << ' '
-					  << thisIndex.y << ' ' << err << endl;
+				CkCallback cb(CkReductionTarget(Main, maxErrorReduction), mainProxy);
+				contribute(sizeof(double), &err, CkReduction::max_double, cb);
 			}				
 
 				// If there is another iteration, reset region

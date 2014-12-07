@@ -43,6 +43,11 @@ Main::Main(CkArgMsg* m)
 
 }
 
+void Main::maxErrorReduction(double error)
+{
+	ckout << "Maximum Error: " << error << endl;
+}
+
 void Main::done()
 {
 	if(++count==N*N)
