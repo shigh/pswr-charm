@@ -14,5 +14,4 @@ CHARMRUN=../code/charmrun
 SWR=../code/swr
 . ../setup.sh
 
-${CHARMRUN} ++mpiexec ${SWR} +p8 3 2 10 5 +balancer GreedyCommLB
-
+${CHARMRUN} ++mpiexec ${SWR} +p8 4 2 40 5 +balancer RefineCommLB
