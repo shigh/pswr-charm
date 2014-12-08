@@ -114,27 +114,22 @@ mainmodule SWRCharm
 
 				// If there is another iteration, reset region
 			serial
-			{				
-				if (region->chunks_left() == 0 && iteration == n_iter - 1) {
+			{
+				if(iteration<n_iter-1) {
+					region->reset();
+				}
+				else  {
 					mainProxy.done(thisIndex.x, thisIndex.y, iteration);
 				}
-				if(iteration<n_iter - 1) {
-					
-					region->reset();
+			}
+			serial {
+				if (iteration < n_iter - 1) 
+				{
 					iteration++;
 					if (iteration % lb_freq == 0) 
 						AtSync();
 					else 
 						run_iter();
-				}
-				else if (region->chunks_left()) {
-					
-					iteration = 0;
-					region->reset();
-					region->next_chunk();
-					region->set_x0(region->get_x());
-					region->reset();
-					run_iter();
 				}
 			}
 		};

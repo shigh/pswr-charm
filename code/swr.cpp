@@ -13,13 +13,12 @@ void init_node()
 Main::Main(CkArgMsg* m)
 {
 
-	if(m->argc < 5) CkAbort("Expects 4 args: N domains (each dimension), L, K, n_iter, lb_freq");
+	if(m->argc < 5) CkAbort("Expects 4 args: N domains (each dimension), L, n_iter, lb_freq");
 
 	N      = atoi(m->argv[1]);
 	Lpi    = atoi(m->argv[2]);
-	int K    = atoi(m->argv[3]);
-	n_iter = atoi(m->argv[4]);
-	lb_freq = atoi(m->argv[5]);
+	n_iter = atoi(m->argv[3]);
+	lb_freq = atoi(m->argv[4]);
 	delete m;
 
 	mainProxy = thisProxy;
@@ -33,6 +32,7 @@ Main::Main(CkArgMsg* m)
 	int nx = 100*N;
 	int ny = 100*N;
 
+	int K = 1;
 	int overlap = 20;
 	int nt = 10;
 	int ind;
@@ -101,8 +101,7 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 	Solver *solver = new HeatSolverBTCS(ny, dy, nx, dx);
 	region = new Region(K, overlap, nt, ny, dy, nx, dx, x0, solver);
-	for (int i = 0; i < K; i++ )
-		region->set_dt(dt, i);
+	region->set_dt(dt, 0);
 
 	// Setup boundary comm logic
 	n_recv = 0;

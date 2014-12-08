@@ -39,7 +39,7 @@ private:
 
 	// Number of chunks
 	int K;
-	int curr_chunk, curr_chunk_ind;
+	int curr_chunk, curr_chunk_ind, curr_ind;
 
 	// Model params
 	int nt, nt_max, ny, nx;
@@ -123,7 +123,5 @@ public:
 	 * overwritten.
 	 */
 	void hold_constant(boundary_t bndy);
-	void set_x0(std::vector<double> x0);
-	int chunks_left();
-	void next_chunk();
+
 };
