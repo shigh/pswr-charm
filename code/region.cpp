@@ -15,10 +15,10 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	
 	int array_nt = std::max(nt_max*K, nt);
 	dt_vals = std::vector<double>(K,     0);
-	west    = std::vector<double>(ny*array_nt, 0);
-	east    = std::vector<double>(ny*array_nt, 0);
-	north   = std::vector<double>(nx*array_nt, 0);
-	south   = std::vector<double>(nx*array_nt, 0);
+	west    = std::vector<double>(ny*(array_nt + 1), 0);
+	east    = std::vector<double>(ny*(array_nt + 1), 0);
+	north   = std::vector<double>(nx*(array_nt + 1), 0);
+	south   = std::vector<double>(nx*(array_nt + 1), 0);
 	west_const = east_const = north_const = south_const = false;
 
 	// Setup chunk logic
