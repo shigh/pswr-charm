@@ -28,12 +28,15 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	chunk_start = std::vector<int>(K, 0);
 	chunk_size  = std::vector<int>(K, cs);
 	for(int i=0; i<K; i++)
-		chunk_start[i] = start_mult*i;
+		chunk_start[i] = start_mult*i + 1;
+	//	chunk_start[0] = 1;
 	chunk_size[K-1] = nt-cs*(K-1);
 
 	// Set the time t==0 boundary array values to
 	// the intial values
 	update_boundary_arrays(x0, 0, 0);
+
+
 
 	reset();
 
@@ -44,11 +47,10 @@ void Region::reset()
 
 	x = x0; // Copy x0 into x
 	// Set region to initial state
-	curr_chunk     = 0;
-	curr_chunk_ind = 1;
-	curr_ind       = 1;
+	//	curr_chunk     = 0;
+	curr_chunk_ind = chunk_start[curr_chunk];
+	//	curr_chunk_ind = 1;
 	solver->set_dt(dt_vals[curr_chunk]);
-
 }
 
 void Region::time_step()
@@ -59,7 +61,7 @@ void Region::time_step()
 	double* peast  = &east[get_curr_start_index(EAST)];
 	double* pnorth = &north[get_curr_start_index(NORTH)];
 	double* psouth = &south[get_curr_start_index(SOUTH)];
-   
+
 
 	solver->set_rhs(x, pwest, peast, pnorth, psouth);
 
@@ -68,15 +70,14 @@ void Region::time_step()
 	update_boundary_arrays(x, curr_chunk, curr_chunk_ind);
 
 	++curr_chunk_ind;
-	++curr_ind;
-	if(curr_chunk_ind == chunk_size[curr_chunk] && curr_chunk < chunk_start.size() - 1)
-	{
-		++curr_chunk;
-		curr_chunk_ind = 0;
-		curr_ind = chunk_start[curr_chunk];
-		solver->set_dt(dt_vals[curr_chunk]);
-	}
+
 	
+}
+
+void Region::next_chunk() {
+	++curr_chunk;
+	curr_chunk_ind = chunk_start[curr_chunk];
+	solver->set_dt(dt_vals[curr_chunk]);
 }
 
 
@@ -100,7 +101,6 @@ void Region::pup(PUP::er &p)
   p | K;
   p | curr_chunk;
   p | curr_chunk_ind;
-  p | curr_ind;
   p | nt;
   p | nt_max;
   p | nx;
@@ -161,7 +161,6 @@ void Region::time_step_chunk()
 	int n_steps = chunk_size[curr_chunk];
 	// Handle the known initial values
 	if(curr_chunk==0) --n_steps;
-
 	for(int i=0; i<n_steps; i++)
 		time_step();
 
@@ -178,6 +177,10 @@ void Region::set_dt(int nt, double dt, int N)
 	chunk_size[N] = nt;
 	if(N==curr_chunk)
 		solver->set_dt(dt_vals[curr_chunk]);
+}
+
+int Region::chunks_left() {
+	return dt_vals.size() - curr_chunk - 1;
 }
 
 double Region::get_dt(int N)
@@ -311,4 +314,9 @@ void Region::hold_constant(boundary_t bndy)
 	north_const = NORTH & bndy;
 	south_const = SOUTH & bndy;
 
+}
+
+void Region::set_x0(std::vector<double> x0_) {
+	x0 = x0_;
+	update_boundary_arrays(x0, curr_chunk, chunk_start[curr_chunk] - 1);
 }
