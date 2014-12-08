@@ -13,12 +13,12 @@ Region::Region(int K_, int overlap_, int nt_, int ny_,
 	x0(x0_), solver(solver_), nt_max(nt_max_)
 {
 	
-	int array_nt = std::max(nt_max*K, nt);
+	int array_nt = std::max(nt_max*K, nt*K);
 	dt_vals = std::vector<double>(K,     0);
-	west    = std::vector<double>(ny*(array_nt + 1), 0);
-	east    = std::vector<double>(ny*(array_nt + 1), 0);
-	north   = std::vector<double>(nx*(array_nt + 1), 0);
-	south   = std::vector<double>(nx*(array_nt + 1), 0);
+	west    = std::vector<double>(ny*(array_nt), 0);
+	east    = std::vector<double>(ny*(array_nt), 0);
+	north   = std::vector<double>(nx*(array_nt), 0);
+	south   = std::vector<double>(nx*(array_nt), 0);	
 	west_const = east_const = north_const = south_const = false;
 
 	// Setup chunk logic
@@ -243,9 +243,9 @@ int Region::get_chunk_start_index(boundary_t bndy, int N)
 
 	int start = -1;
 	if(bndy==WEST || bndy==EAST)
-		start = ny*chunk_start[N];
+		start = ny*(chunk_start[N] - 1);
 	else if(bndy==NORTH || bndy==SOUTH)
-		start = nx*chunk_start[N];
+		start = nx*(chunk_start[N] - 1);
 	assert(start!=-1);
 
 	return start;
@@ -264,9 +264,9 @@ int Region::get_start_index(boundary_t bndy, int chunk, int chunk_ind)
 
 	int start = -1;
 	if(bndy==WEST || bndy==EAST)
-		start = ny*chunk_start[chunk]+ny*chunk_ind;
+		start = ny*(chunk_start[chunk] - 1)+ny*chunk_ind;
 	else if(bndy==NORTH || bndy==SOUTH)
-		start = nx*chunk_start[chunk]+nx*chunk_ind;
+		start = nx*(chunk_start[chunk] - 1)+nx*chunk_ind;
 	assert(start!=-1);
 
 	return start;
