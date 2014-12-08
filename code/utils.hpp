@@ -14,7 +14,8 @@ typedef int boundary_t;
 #define SOUTH (boundary_t)0x08 // 0000 1000
 
 void one_d_heat_BTCS(Mat &A, PetscInt n, PetscReal dx, PetscReal dt);
-void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, bool init);
+void two_d_heat_BTCS(Mat &A, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx);
+void two_d_heat_BTCS_T_up(Mat &A, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, PetscReal dt);
 void partition_domain(std::vector<int>& start, std::vector<int>& end,
 					  const int N, const int n, const int k);
 

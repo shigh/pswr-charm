@@ -48,16 +48,16 @@ void Solver::pup(PUP::er &p)
 
 void HeatSolverBTCS::set_dt(double dt_)
 {
-	// Recreating A just to update dt is inefficient. We will do this differently later.
-	two_d_heat_BTCS(A, dt_, ny, dy, nx, dx, false);
 	dt = dt_;
+	two_d_heat_BTCS_T_up(A, ny, dy, nx, dx, dt);
 }
 
 HeatSolverBTCS::HeatSolverBTCS(int ny_, double dy_, int nx_, double dx_):
 	Solver(ny_, dy_, nx_, dx_)
 {
 	// Create a sparse matrix A
-	two_d_heat_BTCS(A, 1.0, ny, dy, nx, dx, true);
+	two_d_heat_BTCS(A, ny, dy, nx, dx);
+	dt = 1.0;
 	// set up linear solver context (ksp) and preconditioner (pc)
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 	KSPSetOperators(ksp,A,A);
@@ -150,7 +150,7 @@ void HeatSolverBTCS::pup(PUP::er &p)
   p|rhs; p|temp;
   if (p.isUnpacking()) {
     //unpack A
-    two_d_heat_BTCS(A, dt, ny, dy, nx, dx, true);
+    two_d_heat_BTCS(A, ny, dy, nx, dx); 
     KSPCreate(PETSC_COMM_WORLD, &ksp);
     KSPSetOperators(ksp, A, A);
     KSPGetPC(ksp, &pc);

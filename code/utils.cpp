@@ -28,9 +28,10 @@ void one_d_heat_BTCS(Mat &A, PetscInt n, PetscReal dx, PetscReal dt) {
 	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
 }
 
-void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, bool init) {
+void two_d_heat_BTCS(Mat &A, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx) {
 
 	PetscReal kx,ky;
+	PetscReal dt = 1.0;
 	PetscInt N,i,j,m;
 	PetscInt non_zeros_per_row = 5;
 
@@ -38,12 +39,10 @@ void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt n
 	ky = dt/(dy*dy);
 	N = nx*ny;
 
-	// This will be removed after we fix our dt update
-	if (init) {
-		// Create a sparse matrix:
-		MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,non_zeros_per_row,PETSC_NULL,&A);
-		MatSetFromOptions(A);
-	}
+	// Create a sparse matrix:
+	MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,non_zeros_per_row,PETSC_NULL,&A);
+	MatSetFromOptions(A);
+
 
 	for (j = 0; j < ny; j++) {
 		for (i = 0; i < nx; i++) {
@@ -71,6 +70,36 @@ void two_d_heat_BTCS(Mat &A, PetscReal dt, PetscInt ny, PetscReal dy, PetscInt n
 
 	MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); 
 	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);	 
+}
+
+void two_d_heat_BTCS_T_up(Mat &A, PetscInt ny, PetscReal dy, PetscInt nx, PetscReal dx, PetscReal dt) {
+	
+	PetscReal kx,ky;
+	PetscInt i,j,m;
+
+	kx = dt/(dx*dx);
+	ky = dt/(dy*dy);
+
+	PetscReal stencil[] = {-1*ky, -1*kx, 1+2*kx+2*ky, -1*kx, -1*ky};
+
+	// iterate only over rows that must be changed, apply stencil to each row
+	for (j = 1; j < ny-1; j++) {		// executes ny-2 times
+		for (i = 1; i < nx-1; i++) {	// executes nx-2 times
+		
+			// indices of diagonal
+			m = i+j*nx;
+	
+			// set stencil destination
+			PetscInt cols_to_change[] = {m-nx, m-1, m, m+1, m+nx};
+			PetscInt rows_to_change[] = {m};
+
+			// set values
+			MatSetValues(A,1,rows_to_change,5,cols_to_change,stencil,INSERT_VALUES);
+		}
+	}
+
+	MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); 
+	MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
 }
 
 void partition_domain(std::vector<int>& start, std::vector<int>& end,
