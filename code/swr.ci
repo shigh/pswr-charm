@@ -117,7 +117,6 @@ mainmodule SWRCharm
 			{
 				if(iteration<n_iter-1) {
 					region->reset();
-					ckout << thisIndex.x << " " << thisIndex.y << " " << iteration << " " << n_iter - 1 << endl;
 				}
 				else  {
 					mainProxy.done(thisIndex.x, thisIndex.y, iteration);
