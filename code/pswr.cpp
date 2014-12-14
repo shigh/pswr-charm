@@ -55,13 +55,13 @@ void Main::maxErrorReduction(double error)
 	ckout << "Iteration " << iter_err++ << ": " << error << endl;
 }
 
-void Main::done(int idx_x, int idx_y, int iteration)
+void Main::done(int idx_x, int idx_y, int iteration, double err_)
 {
 
 	if(++count==N*N)
 	{
 		ckout << "Done at iteration " << iteration
-			  << " - Error: " << err << endl;
+			  << " - Error: " << err_ << endl;
 		CkExit();
 	}
 }

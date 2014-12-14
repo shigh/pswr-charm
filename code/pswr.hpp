@@ -25,7 +25,7 @@ public:
 	void maxErrorReduction(double error);
 
 	// Termination callback
-	void done(int idx_x, int idx_y, int iteration);
+	void done(int idx_x, int idx_y, int iteration, double err);
 
 };
 
@@ -52,6 +52,8 @@ private:
 	int K;
 
 	int next_itr, prev_itr, curr_chunk;
+
+	double err;
 
 	// Domain indexes
 	int west, east, north, south;

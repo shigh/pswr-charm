@@ -29,7 +29,7 @@ mainmodule PSWRCharm
 		entry[reductiontarget] void maxErrorReduction(double error);
 
 		// End of simulation callback
-		entry void done(int idx_x, int idx_y, int iteration);
+		entry void done(int idx_x, int idx_y, int iteration, double err);
 
 	};
 	
@@ -116,14 +116,13 @@ mainmodule PSWRCharm
 				{
 					std::vector<double> x = region->get_x();
 				
-					double err = 0;
 					for(int i=0; i<x.size(); i++)
 					{
 						err = std::max(err, std::abs(x[i]-expected[i]));
 					}
 
-					CkCallback cb(CkReductionTarget(Main, maxErrorReduction), mainProxy);
-					contribute(sizeof(double), &err, CkReduction::max_double, cb);
+					// CkCallback cb(CkReductionTarget(Main, maxErrorReduction), mainProxy);
+					// contribute(sizeof(double), &err, CkReduction::max_double, cb);
 				}				
 			}
 			// If there is another iteration, reset region
@@ -132,7 +131,7 @@ mainmodule PSWRCharm
 
 				ckout << thisIndex.x << ' ' << thisIndex.y << ' ' << thisIndex.z << endl;
 				if(thisIndex.z==n_iter-1)
-					mainProxy.done(thisIndex.x, thisIndex.y, curr_chunk);
+					mainProxy.done(thisIndex.x, thisIndex.y, curr_chunk, err);
 
 			}
 		};
