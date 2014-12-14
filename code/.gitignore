@@ -6,6 +6,7 @@ testsuite
 *.def.h
 charmrun
 swr
+pswr
 
 # Emacs Junk
 *~

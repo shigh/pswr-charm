@@ -1,8 +1,8 @@
 
-#include "swr.hpp"
+#include "pswr.hpp"
 
 /*readonly*/ CProxy_Main mainProxy;
-/*readonly*/ CProxy_SWRDomain domainProxy;
+/*readonly*/ CProxy_PSWRDomain domainProxy;
 
 void init_node()
 {
@@ -15,9 +15,9 @@ Main::Main(CkArgMsg* m)
 
 	if(m->argc < 5) CkAbort("Expects 4 args: N domains (each dimension), L, n_iter, lb_freq");
 
-	N      = atoi(m->argv[1]);
-	Lpi    = atoi(m->argv[2]);
-	n_iter = atoi(m->argv[3]);
+	N       = atoi(m->argv[1]);
+	Lpi     = atoi(m->argv[2]);
+	n_iter  = atoi(m->argv[3]);
 	lb_freq = atoi(m->argv[4]);
 	delete m;
 
@@ -39,11 +39,12 @@ Main::Main(CkArgMsg* m)
 	double dx, dt, L, k;
 
 	L  = Lpi*M_PI;
-	k  = 1.;
+	k  = n_iter;
 	dt = .01;
 	dx = L/((double)(nx-1));
 
-	domainProxy = CProxy_SWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx, N, N, n_iter, lb_freq, N,  N);
+	domainProxy = CProxy_PSWRDomain::ckNew(K, overlap, nt, dt, nx, dx, nx, dx,
+										   N, N, n_iter, lb_freq, N, N, n_iter);
 	domainProxy.run_simulation();
 
 }
@@ -65,9 +66,9 @@ void Main::done(int idx_x, int idx_y, int iteration)
 	}
 }
 
-SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
-					 int gny_, double dy_, int gnx_, double dx_,
-					 int GNx_, int GNy_, int n_iter_, int lb_freq_):
+PSWRDomain::PSWRDomain(int K_, int overlap_, int nt_, double dt_,
+					   int gny_, double dy_, int gnx_, double dx_,
+					   int GNx_, int GNy_, int n_iter_, int lb_freq_):
 	K(K_), overlap(overlap_), nt(nt_), dt(dt_), gny(gny_), dy(dy_), gnx(gnx_), dx(dx_),
 	GNx(GNx_), GNy(GNy_), n_iter(n_iter_), lb_freq(lb_freq_)
 {
@@ -88,6 +89,16 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 	nx = xend-xstart;
 	ny = yend-ystart;
 
+	if(thisIndex.z>0)
+		prev_itr = thisIndex.z-1;
+	else
+		prev_itr = -1;
+
+	if(thisIndex.z<n_iter-1)
+		next_itr = thisIndex.z+1;
+	else
+		next_itr = -1;
+
 	// Setup test problem
 	build_x0_expected();
 
@@ -101,7 +112,8 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 	Solver *solver = new HeatSolverBTCS(ny, dy, nx, dx);
 	region = new Region(K, overlap, nt, ny, dy, nx, dx, x0, solver);
-	region->set_dt(dt, 0);
+	for(int i=0; i<K; i++)
+		region->set_dt(dt, i);
 
 	// Setup boundary comm logic
 	n_recv = 0;
@@ -162,14 +174,14 @@ SWRDomain::SWRDomain(int K_, int overlap_, int nt_, double dt_,
 
 }
 
-SWRDomain::~SWRDomain()
+PSWRDomain::~PSWRDomain()
 {
 }
-void SWRDomain::ResumeFromSync() {
+void PSWRDomain::ResumeFromSync() {
 	run_iter();
 }
-void SWRDomain::pup(PUP::er& p){
-	CBase_SWRDomain::pup(p);
+void PSWRDomain::pup(PUP::er& p){
+	CBase_PSWRDomain::pup(p);
 	p | nt; p | gny; p | gnx;
 	p | dt; p | dy; p | dx;
 	p | ny; p | nx; p | overlap;
@@ -193,7 +205,7 @@ void SWRDomain::pup(PUP::er& p){
 
 }
 
-void SWRDomain::build_x0_expected()
+void PSWRDomain::build_x0_expected()
 {
 
 	x0       = std::vector<double>(ny*nx, 0);
@@ -214,6 +226,4 @@ void SWRDomain::build_x0_expected()
 
 }
 
-
-
-#include "SWRCharm.def.h"
+#include "PSWRCharm.def.h"
